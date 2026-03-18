@@ -25,9 +25,18 @@
       "csp": null
     }
   },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/adanviniciusfl/lionsolver/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgxMDcyRTc2QzY3M0RDQkEKUldTNjNIUEdkaTRIZ1FXSk05NXRDdktnMU82cFhwNDBkQU5MVC9sb0puU21zcTh5Yi9NNXU2dDEK"
+    }
+  },
   "bundle": {
     "active": true,
     "targets": ["nsis"],
+    "createUpdaterArtifacts": "v1Compatible",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

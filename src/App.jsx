@@ -1,5 +1,41 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Search, Plus, Edit3, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, AlertTriangle, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload } from "lucide-react";
+
+/* ══════════════════════════════════════════════════════════════
+   AUTO-UPDATER (only runs in Tauri desktop, ignored in browser)
+   ══════════════════════════════════════════════════════════════ */
+async function checkForUpdates(setUpdateStatus) {
+  try {
+    // Dynamic import so it doesn't break when running in browser
+    const { check } = await import("@tauri-apps/plugin-updater");
+    const { ask } = await import("@tauri-apps/plugin-dialog");
+
+    setUpdateStatus("checking");
+    const update = await check();
+
+    if (update) {
+      setUpdateStatus("available");
+      const yes = await ask(
+        `Nova versao disponivel: v${update.version}\n\nDeseja atualizar agora?`,
+        { title: "LionSolver - Atualizacao", kind: "info", okLabel: "Atualizar", cancelLabel: "Depois" }
+      );
+      if (yes) {
+        setUpdateStatus("downloading");
+        await update.downloadAndInstall();
+        // Restart after install
+        const { relaunch } = await import("@tauri-apps/plugin-process");
+        await relaunch();
+      } else {
+        setUpdateStatus("skipped");
+      }
+    } else {
+      setUpdateStatus("uptodate");
+    }
+  } catch (e) {
+    // Not running in Tauri or no internet — silently ignore
+    setUpdateStatus("browser");
+  }
+}
 
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -1118,10 +1154,14 @@ export default function App(){
   const[col,setCol]=useState(false);
   const[report,setReport]=useState(null);
   const[config,setConfig]=useState({escritorio:"",contador:"",crc:"",ufPadrao:"BA",cidadePadrao:"Salvador",regimePadrao:"caixa",tema:"escuro"});
+  const[updateStatus,setUpdateStatus]=useState("idle");
   const db=useDB();
 
   // Wire up the global report modal setter
   _setReportModal = setReport;
+
+  // Check for updates on startup (only works in Tauri desktop)
+  useEffect(() => { checkForUpdates(setUpdateStatus); }, []);
 
   const render=()=>{switch(page){
     case"dashboard":return <DashboardPage db={db} navigate={setPage} config={config}/>;
