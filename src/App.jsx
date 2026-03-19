@@ -38,18 +38,35 @@ async function checkForUpdates(setUpdateStatus) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   DESIGN TOKENS
+   DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const T = {
-  bg:"#0F1117",bgCard:"#181B25",bgHov:"#1E2230",bgSide:"#0A0C12",bgIn:"#141720",
-  border:"#252A36",borderF:"#D4A843",text:"#E8E6E1",tm:"#7A7F8E",td:"#4A4F5E",
-  p:"#D4A843",pH:"#E0B84F",pD:"rgba(212,168,67,0.15)",
-  ok:"#34D399",okD:"rgba(52,211,153,0.12)",
-  w:"#FBBF24",wD:"rgba(251,191,36,0.12)",
-  err:"#F87171",errD:"rgba(248,113,113,0.12)",
-  i:"#60A5FA",iD:"rgba(96,165,250,0.12)",
-  r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
+const APP_VERSION = "1.2.0";
+
+const THEMES = {
+  escuro: {
+    bg:"#0F1117",bgCard:"#181B25",bgHov:"#1E2230",bgSide:"#0A0C12",bgIn:"#141720",
+    border:"#252A36",borderF:"#D4A843",text:"#E8E6E1",tm:"#7A7F8E",td:"#4A4F5E",
+    p:"#D4A843",pH:"#E0B84F",pD:"rgba(212,168,67,0.15)",
+    ok:"#34D399",okD:"rgba(52,211,153,0.12)",
+    w:"#FBBF24",wD:"rgba(251,191,36,0.12)",
+    err:"#F87171",errD:"rgba(248,113,113,0.12)",
+    i:"#60A5FA",iD:"rgba(96,165,250,0.12)",
+    r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
+  },
+  claro: {
+    bg:"#F5F6FA",bgCard:"#FFFFFF",bgHov:"#F0F1F5",bgSide:"#FFFFFF",bgIn:"#F0F1F5",
+    border:"#E2E4EA",borderF:"#B8922E",text:"#1A1D26",tm:"#5A5F70",td:"#9096A6",
+    p:"#B8922E",pH:"#A07D20",pD:"rgba(184,146,46,0.10)",
+    ok:"#0F9960",okD:"rgba(15,153,96,0.10)",
+    w:"#D97706",wD:"rgba(217,119,6,0.10)",
+    err:"#DC2626",errD:"rgba(220,38,38,0.08)",
+    i:"#2563EB",iD:"rgba(37,99,235,0.08)",
+    r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
+  },
 };
+
+// T will be set dynamically based on theme — start with dark as default
+let T = THEMES.escuro;
 
 /* ══════════════════════════════════════════════════════════════
    ENGINE — SIMPLES NACIONAL (LC 123/2006 + LC 155/2016)
@@ -368,13 +385,41 @@ function gerarXLSX(res, emp, comp) {
 
 function ReportModal({ report, onClose }) {
   if (!report) return null;
+
+  const handlePrint = () => {
+    const content = document.getElementById("report-content");
+    if (!content) return;
+    const printHTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${report.title}</title><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}body{margin:0;padding:0}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>${content.innerHTML}</body></html>`;
+
+    // Create hidden iframe for printing
+    let iframe = document.getElementById("print-frame");
+    if (iframe) iframe.remove();
+    iframe = document.createElement("iframe");
+    iframe.id = "print-frame";
+    iframe.style.cssText = "position:fixed;top:-10000px;left:-10000px;width:210mm;height:297mm;border:none;";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(printHTML);
+    doc.close();
+
+    // Wait for content to render then print
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      // Clean up after print dialog closes
+      setTimeout(() => { if (iframe.parentNode) iframe.remove(); }, 1000);
+    }, 300);
+  };
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.7)" }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: "12px", width: report.type === "pdf" ? "90vw" : "480px", maxWidth: 860, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid #e5e5e5", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid #e5e5e5", position: "sticky", top: 0, background: "#fff", zIndex: 1, borderRadius: "12px 12px 0 0" }}>
           <span style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a1a" }}>{report.title}</span>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {report.type === "pdf" && <button onClick={() => { const w = document.getElementById("report-content"); if (w) { const pw = window.open("", "_blank"); if (pw) { pw.document.write("<html><head><title>" + report.title + "</title></head><body>" + w.innerHTML + "</body></html>"); pw.document.close(); pw.print(); } } }} style={{ padding: "6px 14px", background: "#1B3A5C", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Imprimir / Salvar PDF</button>}
+            {report.type === "pdf" && <button onClick={handlePrint} style={{ padding: "6px 14px", background: "#1B3A5C", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Imprimir / Salvar PDF</button>}
             {report.type === "xlsx" && <a href={report.dataUri} download={report.filename} style={{ padding: "6px 14px", background: "#1B3A5C", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}>Baixar .XLS</a>}
             <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", color: "#888" }}>✕</button>
           </div>
@@ -402,32 +447,74 @@ function Modal({open,onClose,title,children,width=560}){if(!open)return null;ret
 function KPI({icon:I,label,value,sub,color=T.p}){return <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"16px 18px",flex:1,minWidth:160}}><div style={{display:"flex",justifyContent:"space-between"}}><div><p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</p><p style={{margin:"4px 0 0",fontSize:"22px",fontWeight:800,color:T.text}}>{value}</p>{sub&&<p style={{margin:"2px 0 0",fontSize:"10px",color:T.tm}}>{sub}</p>}</div><div style={{width:34,height:34,borderRadius:"8px",background:`${color}18`,display:"flex",alignItems:"center",justifyContent:"center"}}><I size={16} style={{color}}/></div></div></div>;}
 
 /* ══════════════════════════════════════════════════════════════
-   DATABASE — Persistente (salva no disco via localStorage)
+   DATABASE — Persistente (Tauri file system + localStorage fallback)
    ══════════════════════════════════════════════════════════════ */
 
-// Helper: load from localStorage with fallback
-function loadData(key, fallback) {
+const DB_FILE = "lionsolver_data.json";
+let _tauriFs = null;
+let _dbFilePath = null;
+let _fsReady = false;
+
+async function initTauriFS() {
   try {
-    const raw = localStorage.getItem("lionsolver_" + key);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { /* ignore parse errors */ }
-  return fallback;
+    const fs = await import("@tauri-apps/plugin-fs");
+    const path = await import("@tauri-apps/api/path");
+    _tauriFs = fs;
+    const appDir = await path.appDataDir();
+    _dbFilePath = appDir + DB_FILE;
+    try { await fs.mkdir(appDir, { recursive: true }); } catch(e) {}
+    _fsReady = true;
+  } catch(e) { _fsReady = false; }
 }
 
-// Helper: save to localStorage
-function saveData(key, data) {
+async function loadAllData() {
+  if (_fsReady && _tauriFs && _dbFilePath) {
+    try {
+      const raw = await _tauriFs.readTextFile(_dbFilePath);
+      return JSON.parse(raw);
+    } catch(e) {}
+  }
   try {
-    localStorage.setItem("lionsolver_" + key, JSON.stringify(data));
-  } catch (e) { /* ignore quota errors */ }
+    const raw = localStorage.getItem("lionsolver_alldata");
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+async function saveAllData(data) {
+  if (_fsReady && _tauriFs && _dbFilePath) {
+    try { await _tauriFs.writeTextFile(_dbFilePath, JSON.stringify(data)); } catch(e) {}
+  }
+  try { localStorage.setItem("lionsolver_alldata", JSON.stringify(data)); } catch(e) {}
+}
+
+let _saveTimer = null;
+function debouncedSave(data) {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => saveAllData(data), 300);
 }
 
 function useDB() {
-  const [empresas, setE] = useState(() => loadData("empresas", []));
-  const [apuracoes, setA] = useState(() => loadData("apuracoes", []));
+  const [empresas, setE] = useState([]);
+  const [apuracoes, setA] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
-  // Persist whenever data changes
-  useEffect(() => { saveData("empresas", empresas); }, [empresas]);
-  useEffect(() => { saveData("apuracoes", apuracoes); }, [apuracoes]);
+  useEffect(() => {
+    (async () => {
+      await initTauriFS();
+      const data = await loadAllData();
+      if (data) {
+        if (data.empresas) setE(data.empresas);
+        if (data.apuracoes) setA(data.apuracoes);
+      }
+      setLoaded(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    debouncedSave({ empresas, apuracoes });
+  }, [empresas, apuracoes, loaded]);
 
   const addE = useCallback(d => {
     const e = { ...d, id: genId(), ativa: true };
@@ -443,7 +530,6 @@ function useDB() {
     return ap;
   }, []);
 
-  // Import data (for backup restore)
   const importData = useCallback((data) => {
     if (data.empresas) setE(data.empresas);
     if (data.apuracoes) setA(data.apuracoes);
@@ -1065,7 +1151,7 @@ function ConfigPage({config, setConfig, db}) {
         <Btn v={config.tema === "escuro" ? "primary" : "ghost"} sz="sm" onClick={() => setConfig(c => ({...c, tema: "escuro"}))}>Tema Escuro</Btn>
         <Btn v={config.tema === "claro" ? "primary" : "ghost"} sz="sm" onClick={() => setConfig(c => ({...c, tema: "claro"}))}>Tema Claro</Btn>
       </div>
-      {config.tema === "claro" && <p style={{fontSize:"11px",color:T.w,margin:"8px 0 0"}}>O tema claro será implementado na versão desktop (Tauri). No protótipo, o tema escuro é o padrão.</p>}
+      {config.tema === "claro" && <p style={{fontSize:"11px",color:T.ok,margin:"8px 0 0"}}>Tema claro ativado.</p>}
     </div>
 
     {/* Backup */}
@@ -1211,6 +1297,9 @@ export default function App(){
   // Check for updates on startup (only works in Tauri desktop)
   useEffect(() => { checkForUpdates(setUpdateStatus); }, []);
 
+  // Apply theme
+  T = THEMES[config.tema] || THEMES.escuro;
+
   const render=()=>{switch(page){
     case"dashboard":return <DashboardPage db={db} navigate={setPage} config={config}/>;
     case"empresas":return <EmpresasPage db={db}/>;
@@ -1230,14 +1319,15 @@ export default function App(){
 
     <aside style={{width:col?56:200,background:T.bgSide,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",transition:"width 0.25s",flexShrink:0,overflow:"hidden"}}>
       <div style={{padding:col?"14px 8px":"14px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:8}}>
-        <div style={{width:30,height:30,borderRadius:"7px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",fontWeight:800,color:T.bg}}>L</div>
-        {!col&&<div><p style={{fontSize:"13px",fontWeight:800,color:T.text,margin:0}}>LionSolver</p><p style={{fontSize:"8px",color:T.td,margin:0,letterSpacing:"0.08em",textTransform:"uppercase"}}>Simples Nacional v3</p></div>}
+        <div style={{width:30,height:30,borderRadius:"7px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",fontWeight:800,color:config.tema==="claro"?"#fff":T.bg}}>L</div>
+        {!col&&<div><p style={{fontSize:"13px",fontWeight:800,color:T.text,margin:0}}>LionSolver</p><p style={{fontSize:"8px",color:T.td,margin:0,letterSpacing:"0.08em",textTransform:"uppercase"}}>Simples Nacional</p></div>}
       </div>
       <nav style={{flex:1,padding:"8px 4px",display:"flex",flexDirection:"column",gap:1}}>
         {NAV.map(n=>{const a=page===n.id;return <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:8,padding:col?"9px 0":"9px 10px",justifyContent:col?"center":"flex-start",background:a?T.pD:"transparent",color:a?T.p:T.tm,border:"none",borderRadius:T.rs,cursor:"pointer",fontFamily:T.f,fontSize:"12px",fontWeight:a?700:500,width:"100%",borderLeft:a?`3px solid ${T.p}`:"3px solid transparent"}}><n.icon size={15}/>{!col&&n.label}</button>;})}
       </nav>
       <div style={{padding:"8px 4px",borderTop:`1px solid ${T.border}`}}>
         <button onClick={()=>setCol(!col)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"100%",padding:6,background:"transparent",border:"none",color:T.td,cursor:"pointer",borderRadius:T.rs,fontSize:"10px",fontFamily:T.f}}><Menu size={13}/>{!col&&<span style={{marginLeft:6}}>Recolher</span>}</button>
+        {!col&&<p style={{textAlign:"center",fontSize:"9px",color:T.td,margin:"6px 0 2px",fontFamily:T.fm}}>v{APP_VERSION}</p>}
       </div>
     </aside>
 
