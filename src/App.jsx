@@ -40,13 +40,13 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.4.0";
 
 const THEMES = {
   escuro: {
     bg:"#0F1117",bgCard:"#181B25",bgHov:"#1E2230",bgSide:"#0A0C12",bgIn:"#141720",
     border:"#252A36",borderF:"#D4A843",text:"#E8E6E1",tm:"#7A7F8E",td:"#4A4F5E",
-    p:"#D4A843",pH:"#E0B84F",pD:"rgba(212,168,67,0.15)",
+    p:"#D4A843",pH:"#E0B84F",pD:"rgba(212,168,67,0.15)",pText:"#0F1117",
     ok:"#34D399",okD:"rgba(52,211,153,0.12)",
     w:"#FBBF24",wD:"rgba(251,191,36,0.12)",
     err:"#F87171",errD:"rgba(248,113,113,0.12)",
@@ -54,14 +54,15 @@ const THEMES = {
     r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
   },
   claro: {
-    bg:"#F5F6FA",bgCard:"#FFFFFF",bgHov:"#F0F1F5",bgSide:"#FFFFFF",bgIn:"#F0F1F5",
-    border:"#E2E4EA",borderF:"#B8922E",text:"#1A1D26",tm:"#5A5F70",td:"#9096A6",
-    p:"#B8922E",pH:"#A07D20",pD:"rgba(184,146,46,0.10)",
+    bg:"#F0F1F5",bgCard:"#FFFFFF",bgHov:"#E8E9EE",bgSide:"#1B2332",bgIn:"#F5F6FA",
+    border:"#D8DAE2",borderF:"#B8922E",text:"#1A1D26",tm:"#5A5F70",td:"#9096A6",
+    p:"#B8922E",pH:"#A07D20",pD:"rgba(184,146,46,0.12)",pText:"#FFFFFF",
     ok:"#0F9960",okD:"rgba(15,153,96,0.10)",
     w:"#D97706",wD:"rgba(217,119,6,0.10)",
     err:"#DC2626",errD:"rgba(220,38,38,0.08)",
     i:"#2563EB",iD:"rgba(37,99,235,0.08)",
     r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
+    sideText:"#E8E6E1",sideTm:"#7A7F8E",sideTd:"#4A4F5E",sideBorder:"#252A36",
   },
 };
 
@@ -184,18 +185,18 @@ function calcRBT12Proporcional(receitaAcum,dataAbertura,competencia){
 const SUBSECOES={
   I:[
     {id:"NORMAL",nome:"ICMS Normal",deduz:[]},
-    {id:"ST",nome:"ICMS ST",deduz:["ICMS"]},
-    {id:"ST_MONO",nome:"ICMS ST + PIS/Cofins Monofásico",deduz:["ICMS","PIS","Cofins"]},
-    {id:"MONO",nome:"PIS/Cofins Monofásico",deduz:["PIS","Cofins"]},
+    {id:"ST",nome:"ICMS ST (recolhido anteriormente)",deduz:["ICMS"]},
+    {id:"ST_MONO",nome:"ICMS ST + PIS/Cofins Monofásico (recolhidos anteriormente)",deduz:["ICMS","PIS","Cofins"]},
+    {id:"MONO",nome:"PIS/Cofins Monofásico (recolhido anteriormente)",deduz:["PIS","Cofins"]},
     {id:"DEV",nome:"Devoluções",deduz:["BASE"]},
     {id:"EXP",nome:"Exportação",deduz:["ICMS","PIS","Cofins"]},
     {id:"ISEN",nome:"Isenção/Redução Estadual ICMS",deduz:["ICMS_UF"]},
   ],
   II:[
     {id:"NORMAL",nome:"ICMS/IPI Normal",deduz:[]},
-    {id:"ST",nome:"ICMS ST",deduz:["ICMS"]},
-    {id:"ST_MONO",nome:"ICMS ST + PIS/Cofins Mono",deduz:["ICMS","PIS","Cofins"]},
-    {id:"MONO",nome:"PIS/Cofins Monofásico",deduz:["PIS","Cofins"]},
+    {id:"ST",nome:"ICMS ST (recolhido anteriormente)",deduz:["ICMS"]},
+    {id:"ST_MONO",nome:"ICMS ST + PIS/Cofins Mono (recolhidos anteriormente)",deduz:["ICMS","PIS","Cofins"]},
+    {id:"MONO",nome:"PIS/Cofins Monofásico (recolhido anteriormente)",deduz:["PIS","Cofins"]},
     {id:"DEV",nome:"Devoluções",deduz:["BASE"]},
     {id:"EXP",nome:"Exportação",deduz:["ICMS","IPI","PIS","Cofins"]},
     {id:"ISEN",nome:"Isenção/Redução Estadual ICMS",deduz:["ICMS_UF"]},
@@ -203,28 +204,28 @@ const SUBSECOES={
   III:[
     {id:"NORMAL",nome:"ISS Normal (domicílio)",deduz:[],iss:"domicilio"},
     {id:"ISS_OUTRO",nome:"ISS devido a outro município",deduz:[],iss:"outro"},
-    {id:"ISS_RET",nome:"ISS Retido na Fonte",deduz:["ISS"]},
-    {id:"DEV",nome:"Devoluções/Cancelamentos",deduz:["BASE"]},
+    {id:"ISS_RET",nome:"ISS Retido (a ser recolhido pelo tomador)",deduz:["ISS"],iss:"retido"},
+    {id:"DED",nome:"Deduções/Cancelamentos",deduz:["BASE"]},
     {id:"EXP",nome:"Exportação de Serviços",deduz:["ISS","PIS","Cofins"]},
   ],
   "III/V":[
     {id:"NORMAL",nome:"ISS Normal — Fator r (domicílio)",deduz:[],iss:"domicilio"},
     {id:"ISS_OUTRO",nome:"ISS devido a outro município — Fator r",deduz:[],iss:"outro"},
-    {id:"ISS_RET",nome:"ISS Retido — Fator r",deduz:["ISS"]},
-    {id:"DEV",nome:"Devoluções/Cancelamentos",deduz:["BASE"]},
+    {id:"ISS_RET",nome:"ISS Retido — Fator r (a ser recolhido pelo tomador)",deduz:["ISS"],iss:"retido"},
+    {id:"DED",nome:"Deduções/Cancelamentos",deduz:["BASE"]},
     {id:"EXP",nome:"Exportação de Serviços",deduz:["ISS","PIS","Cofins"]},
   ],
   IV:[
     {id:"NORMAL",nome:"ISS Normal (domicílio)",deduz:[],iss:"domicilio"},
     {id:"ISS_OUTRO",nome:"ISS devido a outro município",deduz:[],iss:"outro"},
-    {id:"ISS_RET",nome:"ISS Retido na Fonte",deduz:["ISS"]},
-    {id:"DEV",nome:"Devoluções/Cancelamentos",deduz:["BASE"]},
+    {id:"ISS_RET",nome:"ISS Retido (a ser recolhido pelo tomador)",deduz:["ISS"],iss:"retido"},
+    {id:"DED",nome:"Deduções/Cancelamentos",deduz:["BASE"]},
   ],
   V:[
     {id:"NORMAL",nome:"ISS Normal (domicílio)",deduz:[],iss:"domicilio"},
     {id:"ISS_OUTRO",nome:"ISS devido a outro município",deduz:[],iss:"outro"},
-    {id:"ISS_RET",nome:"ISS Retido na Fonte",deduz:["ISS"]},
-    {id:"DEV",nome:"Devoluções/Cancelamentos",deduz:["BASE"]},
+    {id:"ISS_RET",nome:"ISS Retido (a ser recolhido pelo tomador)",deduz:["ISS"],iss:"retido"},
+    {id:"DED",nome:"Deduções/Cancelamentos",deduz:["BASE"]},
     {id:"EXP",nome:"Exportação de Serviços",deduz:["ISS","PIS","Cofins"]},
   ],
 };
@@ -327,7 +328,19 @@ ${alertas.length > 0 ? `<div style="font-size:11px;text-transform:uppercase;colo
 ${resultados.map(r => `<div style="background:#f0f3f7;border-left:3px solid #D4A843;padding:6px 10px;margin:4px 0;font-family:monospace;font-size:9px;color:#333">${r.tipo}: [(${fBRL(res.rbt12)} × ${fPct(r.an)}) − ${fBRL(r.pd)}] ÷ ${fBRL(res.rbt12)} = <strong>${fPct(r.ae)}</strong></div>`).join("")}
 
 <div style="font-size:11px;text-transform:uppercase;color:#1B3A5C;font-weight:700;margin:14px 0 6px;border-bottom:1px solid #ddd;padding-bottom:3px">Distribuição por Tributo</div>
-${resultados.map(r => `<div style="margin-bottom:8px"><div style="font-size:9px;color:#666;margin-bottom:3px">${r.tipo} — Anexo ${r.anexo}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${Object.entries(r.dist).map(([t, d]) => `<div style="background:#f5f7fa;border-radius:4px;padding:4px 8px;min-width:70px"><div style="font-size:7px;text-transform:uppercase;color:#888;font-weight:700">${t}</div><div style="font-size:10px;font-weight:700;${d.deduzido && d.valor === 0 ? "color:#c62828" : ""}">${d.deduzido && d.valor === 0 ? "ISENTO" : fBRL(d.valor)}</div><div style="font-size:8px;color:#888;font-family:monospace">${fPct(d.pct)}</div></div>`).join("")}</div></div>`).join("")}
+${resultados.map(r => `<div style="margin-bottom:8px"><div style="font-size:9px;color:#666;margin-bottom:3px">${r.tipo} — Anexo ${r.anexo}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${Object.entries(r.dist).map(([t, d]) => {
+  const dedLabel = d.deduzido && d.valor === 0 ? (t === "ICMS" ? (r.tipo.includes("ST") ? "Rec. ant." : "Isento") : (t === "ISS" ? "Ret. tomador" : "Rec. ant.")) : "";
+  return `<div style="background:#f5f7fa;border-radius:4px;padding:4px 8px;min-width:70px"><div style="font-size:7px;text-transform:uppercase;color:#888;font-weight:700">${t}</div><div style="font-size:10px;font-weight:700;${d.deduzido && d.valor === 0 ? "color:#c62828" : ""}">${dedLabel || fBRL(d.valor)}</div><div style="font-size:8px;color:#888;font-family:monospace">${fPct(d.pct)}</div></div>`;
+}).join("")}</div></div>`).join("")}
+
+${resultados.some(r => r.issRetido && r.valorISSRetido > 0) ? `<div style="font-size:11px;text-transform:uppercase;color:#1B3A5C;font-weight:700;margin:14px 0 6px;border-bottom:1px solid #ddd;padding-bottom:3px">ISS a ser Recolhido pelo Tomador</div>
+${resultados.filter(r => r.issRetido && r.valorISSRetido > 0).map(r => `<div style="background:#fff8e1;border-left:3px solid #f57f17;padding:6px 10px;margin:3px 0;font-size:10px"><strong>${r.tipo}</strong> — Receita: ${fBRL(r.receita)} → <strong style="color:#f57f17">ISS Retido: ${fBRL(r.valorISSRetido)}</strong></div>`).join("")}` : ""}
+
+${(res.quadroAliquotas && res.quadroAliquotas.length > 0) ? `<div style="font-size:11px;text-transform:uppercase;color:#1B3A5C;font-weight:700;margin:14px 0 6px;border-bottom:1px solid #ddd;padding-bottom:3px">Quadro de Alíquotas (Atual e Período Seguinte)</div>
+<table style="width:100%;border-collapse:collapse;font-size:9px;margin-bottom:10px">
+<thead><tr><th style="background:#1B3A5C;color:white;padding:5px 6px;text-align:left">Anexo</th><th style="background:#1B3A5C;color:white;padding:5px 6px;text-align:center">Alíq.Nom.</th><th style="background:#1B3A5C;color:white;padding:5px 6px;text-align:center">Alíq.Ef.</th><th style="background:#1B3A5C;color:white;padding:5px 6px;text-align:center">ICMS (créd.)</th><th style="background:#1B3A5C;color:white;padding:5px 6px;text-align:center">ISS</th><th style="background:#D4A843;color:white;padding:5px 6px;text-align:center">Alíq.Nom.Prox</th><th style="background:#D4A843;color:white;padding:5px 6px;text-align:center">Alíq.Ef.Prox</th><th style="background:#D4A843;color:white;padding:5px 6px;text-align:center">ICMS Prox</th><th style="background:#D4A843;color:white;padding:5px 6px;text-align:center">ISS Prox</th></tr></thead>
+<tbody>${res.quadroAliquotas.map(q => `<tr><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;font-weight:600">${q.anexo} — ${q.nomeAnexo}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace">${fPct(q.atual.aliqNom)}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace;font-weight:700;color:#1B3A5C">${fPct(q.atual.aliqEf)}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace">${q.atual.icms > 0 ? fPct(q.atual.icms) : "—"}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace">${q.atual.iss > 0 ? fPct(q.atual.iss) : "—"}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace">${fPct(q.proximo.aliqNom)}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace;font-weight:700;color:#D4A843">${fPct(q.proximo.aliqEf)}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace">${q.proximo.icms > 0 ? fPct(q.proximo.icms) : "—"}</td><td style="padding:5px 6px;border-bottom:1px solid #e5e5e5;text-align:center;font-family:monospace">${q.proximo.iss > 0 ? fPct(q.proximo.iss) : "—"}</td></tr>`).join("")}</tbody></table>
+<div style="font-size:8px;color:#999;font-style:italic">ICMS (créd.) = alíquota para fins de crédito (Art. 23 LC 123). ISS = alíquota para NFS-e. Período seguinte estimado.</div>` : ""}
 
 <div style="background:#1B3A5C;color:white;border-radius:6px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:10px">
   <div><div style="font-size:8px;text-transform:uppercase;opacity:0.7">Total Bruto</div><div style="font-size:14px;font-weight:700">${fBRL(res.totalBruto)}</div></div>
@@ -440,81 +453,37 @@ function ReportModal({ report, onClose }) {
    UI COMPONENTS
    ══════════════════════════════════════════════════════════════ */
 function Badge({children,color="primary"}){const c={primary:{bg:T.pD,t:T.p},success:{bg:T.okD,t:T.ok},warning:{bg:T.wD,t:T.w},danger:{bg:T.errD,t:T.err},info:{bg:T.iD,t:T.i}}[color]||{bg:T.pD,t:T.p};return <span style={{display:"inline-flex",padding:"2px 9px",borderRadius:"14px",fontSize:"10px",fontWeight:600,background:c.bg,color:c.t,textTransform:"uppercase",letterSpacing:"0.03em"}}>{children}</span>;}
-function Btn({children,v="primary",sz="md",icon:I,onClick,disabled,style:s}){const[h,sH]=useState(false);const base={display:"inline-flex",alignItems:"center",gap:6,border:"none",cursor:disabled?"not-allowed":"pointer",fontFamily:T.f,fontWeight:600,borderRadius:T.rs,transition:"all 0.2s",opacity:disabled?0.5:1};const szs={sm:{padding:"5px 11px",fontSize:"11px"},md:{padding:"8px 16px",fontSize:"12px"},lg:{padding:"11px 22px",fontSize:"13px"}};const vs={primary:{background:h?T.pH:T.p,color:T.bg},ghost:{background:h?"rgba(255,255,255,0.06)":"transparent",color:T.tm},danger:{background:h?"rgba(248,113,113,0.2)":T.errD,color:T.err}};return <button onClick={onClick} disabled={disabled} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} style={{...base,...szs[sz],...vs[v],...s}}>{I&&<I size={sz==="sm"?12:14}/>}{children}</button>;}
+function Btn({children,v="primary",sz="md",icon:I,onClick,disabled,style:s}){const[h,sH]=useState(false);const base={display:"inline-flex",alignItems:"center",gap:6,border:"none",cursor:disabled?"not-allowed":"pointer",fontFamily:T.f,fontWeight:600,borderRadius:T.rs,transition:"all 0.2s",opacity:disabled?0.5:1};const szs={sm:{padding:"5px 11px",fontSize:"11px"},md:{padding:"8px 16px",fontSize:"12px"},lg:{padding:"11px 22px",fontSize:"13px"}};const vs={primary:{background:h?T.pH:T.p,color:T.pText||"#fff"},ghost:{background:h?"rgba(128,128,128,0.12)":"transparent",color:T.tm},danger:{background:h?"rgba(248,113,113,0.2)":T.errD,color:T.err}};return <button onClick={onClick} disabled={disabled} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} style={{...base,...szs[sz],...vs[v],...s}}>{I&&<I size={sz==="sm"?12:14}/>}{children}</button>;}
 function Inp({label,value,onChange,placeholder,mono,error,required,style:s,prefix,type="text"}){const[f,sF]=useState(false);return <div style={{display:"flex",flexDirection:"column",gap:4,...s}}>{label&&<label style={{fontSize:"10px",fontWeight:700,color:T.tm,letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}{required&&<span style={{color:T.err}}>*</span>}</label>}<div style={{position:"relative"}}>{prefix&&<span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:T.td,fontSize:"12px"}}>{prefix}</span>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} onFocus={()=>sF(true)} onBlur={()=>sF(false)} style={{padding:prefix?"9px 12px 9px 28px":"9px 12px",background:T.bgIn,border:`1px solid ${error?T.err:f?T.borderF:T.border}`,borderRadius:T.rs,color:T.text,fontSize:"13px",fontFamily:mono?T.fm:T.f,outline:"none",width:"100%",boxSizing:"border-box"}}/></div>{error&&<span style={{fontSize:"10px",color:T.err}}>{error}</span>}</div>;}
 function Sel({label,value,onChange,options,required,style:s}){return <div style={{display:"flex",flexDirection:"column",gap:4,...s}}>{label&&<label style={{fontSize:"10px",fontWeight:700,color:T.tm,letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}{required&&<span style={{color:T.err}}>*</span>}</label>}<select value={value} onChange={e=>onChange(e.target.value)} style={{padding:"9px 12px",background:T.bgIn,border:`1px solid ${T.border}`,borderRadius:T.rs,color:T.text,fontSize:"13px",fontFamily:T.f,outline:"none",cursor:"pointer",appearance:"none",width:"100%",boxSizing:"border-box"}}>{options.map(o=>typeof o==="string"?<option key={o} value={o}>{o}</option>:<option key={o.v} value={o.v}>{o.l}</option>)}</select></div>;}
 function Modal({open,onClose,title,children,width=560}){if(!open)return null;return <div style={{position:"fixed",inset:0,zIndex:1e3,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.6)"}} onClick={onClose}><div onClick={e=>e.stopPropagation()} style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,width,maxWidth:"92vw",maxHeight:"88vh",overflow:"auto",boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",borderBottom:`1px solid ${T.border}`}}><h3 style={{margin:0,fontSize:"15px",fontWeight:700,color:T.text}}>{title}</h3><button onClick={onClose} style={{background:"none",border:"none",color:T.tm,cursor:"pointer"}}><X size={16}/></button></div><div style={{padding:20}}>{children}</div></div></div>;}
 function KPI({icon:I,label,value,sub,color=T.p}){return <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"16px 18px",flex:1,minWidth:160}}><div style={{display:"flex",justifyContent:"space-between"}}><div><p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</p><p style={{margin:"4px 0 0",fontSize:"22px",fontWeight:800,color:T.text}}>{value}</p>{sub&&<p style={{margin:"2px 0 0",fontSize:"10px",color:T.tm}}>{sub}</p>}</div><div style={{width:34,height:34,borderRadius:"8px",background:`${color}18`,display:"flex",alignItems:"center",justifyContent:"center"}}><I size={16} style={{color}}/></div></div></div>;}
 
+
 /* ══════════════════════════════════════════════════════════════
-   DATABASE — Persistente (Tauri file system + localStorage fallback)
+   STORAGE — localStorage (works in Tauri WebView2 and browser)
    ══════════════════════════════════════════════════════════════ */
-
-const DB_FILE = "lionsolver_data.json";
-let _tauriFs = null;
-let _dbFilePath = null;
-let _fsReady = false;
-
-async function initTauriFS() {
+function loadData(key, fallback) {
   try {
-    const fs = await import("@tauri-apps/plugin-fs");
-    const path = await import("@tauri-apps/api/path");
-    _tauriFs = fs;
-    const appDir = await path.appDataDir();
-    _dbFilePath = appDir + DB_FILE;
-    try { await fs.mkdir(appDir, { recursive: true }); } catch(e) {}
-    _fsReady = true;
-  } catch(e) { _fsReady = false; }
+    const raw = localStorage.getItem("lionsolver_" + key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed !== null && parsed !== undefined) return parsed;
+    }
+  } catch (e) { /* ignore */ }
+  return fallback;
 }
 
-async function loadAllData() {
-  if (_fsReady && _tauriFs && _dbFilePath) {
-    try {
-      const raw = await _tauriFs.readTextFile(_dbFilePath);
-      return JSON.parse(raw);
-    } catch(e) {}
-  }
-  try {
-    const raw = localStorage.getItem("lionsolver_alldata");
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return null;
-}
-
-async function saveAllData(data) {
-  if (_fsReady && _tauriFs && _dbFilePath) {
-    try { await _tauriFs.writeTextFile(_dbFilePath, JSON.stringify(data)); } catch(e) {}
-  }
-  try { localStorage.setItem("lionsolver_alldata", JSON.stringify(data)); } catch(e) {}
-}
-
-let _saveTimer = null;
-function debouncedSave(data) {
-  if (_saveTimer) clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(() => saveAllData(data), 300);
+function saveData(key, data) {
+  try { localStorage.setItem("lionsolver_" + key, JSON.stringify(data)); } catch (e) { /* ignore */ }
 }
 
 function useDB() {
-  const [empresas, setE] = useState([]);
-  const [apuracoes, setA] = useState([]);
-  const [loaded, setLoaded] = useState(false);
+  const [empresas, setE] = useState(() => loadData("empresas", []));
+  const [apuracoes, setA] = useState(() => loadData("apuracoes", []));
 
-  useEffect(() => {
-    (async () => {
-      await initTauriFS();
-      const data = await loadAllData();
-      if (data) {
-        if (data.empresas) setE(data.empresas);
-        if (data.apuracoes) setA(data.apuracoes);
-      }
-      setLoaded(true);
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (!loaded) return;
-    debouncedSave({ empresas, apuracoes });
-  }, [empresas, apuracoes, loaded]);
+  useEffect(() => { saveData("empresas", empresas); }, [empresas]);
+  useEffect(() => { saveData("apuracoes", apuracoes); }, [apuracoes]);
 
   const addE = useCallback(d => {
     const e = { ...d, id: genId(), ativa: true };
@@ -529,24 +498,17 @@ function useDB() {
     setA(p => [...p, ap]);
     return ap;
   }, []);
-
   const importData = useCallback((data) => {
     if (data.empresas) setE(data.empresas);
     if (data.apuracoes) setA(data.apuracoes);
   }, []);
-
-  // Clear all data
   const clearAll = useCallback(() => {
-    setE([]);
-    setA([]);
-    localStorage.removeItem("lionsolver_empresas");
-    localStorage.removeItem("lionsolver_apuracoes");
-    localStorage.removeItem("lionsolver_config");
+    setE([]); setA([]);
+    try { localStorage.removeItem("lionsolver_empresas"); localStorage.removeItem("lionsolver_apuracoes"); localStorage.removeItem("lionsolver_config"); } catch(e) {}
   }, []);
 
   return { empresas, apuracoes, addE, updE, togE, delE, addA, importData, clearAll };
 }
-
 /* ══════════════════════════════════════════════════════════════
    WIZARD DE APURAÇÃO
    ══════════════════════════════════════════════════════════════ */
@@ -654,6 +616,8 @@ function ApuracaoPage({db,navigate}){
         tipo:sub?.nome||"",anexo:anexoKey,anexoOrig:rec.anexo,
         receita:val,faixa:fx+1,an,pd,ae,valorBruto,valorLiquido,dist,
         issUF:rec.issUF,issCidade:rec.issCidade,issDomicilio:sub?.iss==="domicilio",
+        issRetido:sub?.iss==="retido",
+        valorISSRetido:sub?.iss==="retido"?(()=>{const issIdx=ax.tributos.indexOf("ISS");return issIdx>=0?val*ae*ax.rep[fx][issIdx]:0;})():0,
       });
       totalBruto+=valorLiquido;
     }
@@ -679,7 +643,42 @@ function ApuracaoPage({db,navigate}){
       alertas.push({sev:"info",msg:`${emp.uf} possui benefício ICMS, mas RBT12 de ${fBRL(rbt12Calc)} excede o limite de ${fBRL(benUF.limiteRBT12)} — ${benUF.base}`});
     }
 
-    setResultado({resultados,rbt12:rbt12Calc,rbt12Real:prop.rbt12Real||rbt12Calc,fs12:fs,fatorR:fr,totalBruto,totalDev,valorDAS,alertas,prop,benUF});
+    setResultado({resultados,rbt12:rbt12Calc,rbt12Real:prop.rbt12Real||rbt12Calc,fs12:fs,fatorR:fr,totalBruto,totalDev,valorDAS,alertas,prop,benUF,
+      // Quadro de alíquotas: use anexos from receitas (actual) or empresa cadastro
+      quadroAliquotas: (()=>{
+        // Collect unique anexos: from receitas of this apuração, or from empresa cadastro
+        const anexosReceitas=[...new Set(receitas.filter(r=>pM(r.valor)>0).map(r=>{
+          let ak=r.anexo; if(ak==="III/V")ak=fr>=0.28?"III":"V"; return ak;
+        }))];
+        const anexosEmpresa=(emp.anexos||[emp.anexo||"I"]).map(a=>{
+          if(a==="III/V")return fr>=0.28?"III":"V"; return a;
+        });
+        const anexosUnicos=[...new Set([...anexosReceitas,...anexosEmpresa])];
+
+        // Current period RBT12
+        const receitaMesAtual=receitas.filter(r=>pM(r.valor)>0).reduce((s,r)=>s+pM(r.valor),0);
+        // Next period: RBT12 shifts (add current month, conceptually remove 13th month back)
+        const rbt12Prox=rbt12Calc+receitaMesAtual; // Simplified estimate
+
+        return anexosUnicos.map(ak=>{
+          const ax=ANEXOS[ak]; if(!ax)return null;
+          const cur=calcAliqEfetiva(rbt12Calc,ak);
+          const prox=calcAliqEfetiva(rbt12Prox,ak);
+          // ICMS % within the effective rate
+          const icmsIdx=ax.tributos.indexOf("ICMS");
+          const issIdx=ax.tributos.indexOf("ISS");
+          const icmsPctCur=icmsIdx>=0?cur.ae*ax.rep[cur.fx][icmsIdx]:0;
+          const icmsPctProx=icmsIdx>=0?prox.ae*ax.rep[prox.fx][icmsIdx]:0;
+          const issPctCur=issIdx>=0?cur.ae*ax.rep[cur.fx][issIdx]:0;
+          const issPctProx=issIdx>=0?prox.ae*ax.rep[prox.fx][issIdx]:0;
+          return{
+            anexo:ak, nomeAnexo:ax.nome,
+            atual:{aliqNom:cur.an,aliqEf:cur.ae,faixa:cur.fx+1,pd:cur.pd,icms:icmsPctCur,iss:issPctCur},
+            proximo:{aliqNom:prox.an,aliqEf:prox.ae,faixa:prox.fx+1,pd:prox.pd,icms:icmsPctProx,iss:issPctProx,rbt12Est:rbt12Prox},
+          };
+        }).filter(Boolean);
+      })(),
+    });
     setStep(3);
   };
 
@@ -923,13 +922,55 @@ function ApuracaoPage({db,navigate}){
         {resultado.resultados.map((r,i)=><div key={i} style={{marginBottom:14}}>
           <p style={{fontSize:"11px",color:T.tm,margin:"0 0 6px"}}>{r.tipo} — Anexo {r.anexo}</p>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            {Object.entries(r.dist).map(([t,{pct,valor,deduzido}])=><div key={t} style={{background:deduzido?T.errD:T.bgIn,borderRadius:T.rs,padding:"6px 10px",minWidth:80}}>
+            {Object.entries(r.dist).map(([t,{pct,valor,deduzido}])=>{
+              const dedLabel=deduzido&&valor===0?(t==="ICMS"?(r.tipo.includes("ST")?"Recolhido ant.":"Isento/Reduzido"):(t==="ISS"?"Retido pelo tomador":"Recolhido ant.")):"";
+              return <div key={t} style={{background:deduzido?T.errD:T.bgIn,borderRadius:T.rs,padding:"6px 10px",minWidth:80}}>
               <p style={{margin:0,fontSize:"9px",color:T.td,fontWeight:700,textTransform:"uppercase"}}>{t}</p>
-              <p style={{margin:"1px 0 0",fontSize:"12px",fontWeight:700,fontFamily:T.fm,color:deduzido?T.err:valor>0?T.text:T.td}}>{deduzido&&valor===0?"ISENTO":fBRL(valor)}</p>
+              <p style={{margin:"1px 0 0",fontSize:"12px",fontWeight:700,fontFamily:T.fm,color:deduzido?T.err:valor>0?T.text:T.td}}>{dedLabel||fBRL(valor)}</p>
               <p style={{margin:0,fontSize:"9px",fontFamily:T.fm,color:T.tm}}>{fPct(pct)}</p>
-            </div>)}
+            </div>;})}
           </div>
         </div>)}
+
+        {/* ISS Retido pelo tomador */}
+        {resultado.resultados.some(r=>r.issRetido&&r.valorISSRetido>0)&&<>
+          <h4 style={{fontSize:"11px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"16px 0 8px"}}>ISS a ser Recolhido pelo Tomador</h4>
+          <div style={{background:T.wD,borderRadius:T.r,padding:"10px 14px",marginBottom:8}}>
+            {resultado.resultados.filter(r=>r.issRetido&&r.valorISSRetido>0).map((r,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",borderBottom:i<resultado.resultados.filter(x=>x.issRetido).length-1?`1px solid ${T.border}`:"none"}}>
+              <span style={{fontSize:"12px",color:T.text}}>{r.tipo} — {fBRL(r.receita)}</span>
+              <span style={{fontSize:"14px",fontWeight:700,fontFamily:T.fm,color:T.w}}>ISS Retido: {fBRL(r.valorISSRetido)}</span>
+            </div>)}
+          </div>
+        </>}
+
+        {/* Quadro de Alíquotas */}
+        {resultado.quadroAliquotas&&resultado.quadroAliquotas.length>0&&<>
+          <h4 style={{fontSize:"11px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"16px 0 8px"}}>Quadro de Alíquotas (Período Atual e Seguinte)</h4>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:"11px"}}>
+              <thead><tr style={{borderBottom:`2px solid ${T.border}`}}>
+                <th style={{padding:"7px 8px",fontSize:"9px",fontWeight:700,color:T.td,textTransform:"uppercase",textAlign:"left"}} rowSpan={2}>Anexo</th>
+                <th style={{padding:"7px 8px",fontSize:"9px",fontWeight:700,color:T.p,textTransform:"uppercase",textAlign:"center",borderBottom:`1px solid ${T.border}`}} colSpan={4}>Período Atual</th>
+                <th style={{padding:"7px 8px",fontSize:"9px",fontWeight:700,color:T.i,textTransform:"uppercase",textAlign:"center",borderBottom:`1px solid ${T.border}`}} colSpan={4}>Período Seguinte (estimativa)</th>
+              </tr>
+              <tr style={{borderBottom:`1px solid ${T.border}`}}>
+                {["Alíq.Nom.","Alíq.Ef.","ICMS (créd.)","ISS","Alíq.Nom.","Alíq.Ef.","ICMS (créd.)","ISS"].map((h,i)=><th key={i} style={{padding:"5px 8px",fontSize:"8px",fontWeight:600,color:T.td,textTransform:"uppercase",textAlign:"center"}}>{h}</th>)}
+              </tr></thead>
+              <tbody>{resultado.quadroAliquotas.map((q,i)=><tr key={i} style={{borderBottom:`1px solid ${T.border}`}}>
+                <td style={{padding:"8px",fontWeight:600,color:T.text}}><Badge>{q.anexo}</Badge> <span style={{fontSize:"10px",color:T.tm,marginLeft:4}}>{q.nomeAnexo}</span></td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center"}}>{fPct(q.atual.aliqNom)}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center",fontWeight:700,color:T.p}}>{fPct(q.atual.aliqEf)}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center",color:q.atual.icms>0?T.ok:T.td}}>{q.atual.icms>0?fPct(q.atual.icms):"—"}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center",color:q.atual.iss>0?T.i:T.td}}>{q.atual.iss>0?fPct(q.atual.iss):"—"}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center"}}>{fPct(q.proximo.aliqNom)}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center",fontWeight:700,color:T.i}}>{fPct(q.proximo.aliqEf)}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center",color:q.proximo.icms>0?T.ok:T.td}}>{q.proximo.icms>0?fPct(q.proximo.icms):"—"}</td>
+                <td style={{padding:"8px",fontFamily:T.fm,textAlign:"center",color:q.proximo.iss>0?T.i:T.td}}>{q.proximo.iss>0?fPct(q.proximo.iss):"—"}</td>
+              </tr>)}</tbody>
+            </table>
+          </div>
+          <p style={{fontSize:"10px",color:T.td,margin:"6px 0 0",fontStyle:"italic"}}>ICMS (créd.) = alíquota de ICMS dentro do Simples para fins de crédito (Art. 23 LC 123). ISS = alíquota para informar na NFS-e. Período seguinte estimado com RBT12 de {fBRL(resultado.quadroAliquotas[0]?.proximo?.rbt12Est||0)}.</p>
+        </>}
 
         {/* Resumo final */}
         <div style={{marginTop:16,padding:"14px 18px",background:`linear-gradient(135deg,${T.pD},${T.okD})`,borderRadius:T.r,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -1174,7 +1215,7 @@ function EmpresasPage({db}){
   const[search,setSearch]=useState("");
   const[modal,setModal]=useState(false);
   const[editing,setEditing]=useState(null);
-  const blank={cnpj:"",razao:"",fantasia:"",abertura:"",regime:"caixa",uf:"BA",cidade:"Salvador",sublimite:"3600000",anexo:"I"};
+  const blank={cnpj:"",razao:"",fantasia:"",abertura:"",regime:"caixa",uf:"BA",cidade:"Salvador",sublimite:"3600000",anexos:["I"]};
   const[form,setForm]=useState(blank);
 
   const filtered=useMemo(()=>{
@@ -1184,8 +1225,8 @@ function EmpresasPage({db}){
   },[db.empresas,search]);
 
   const openNew=()=>{setForm(blank);setEditing(null);setModal(true);};
-  const openEdit=e=>{setForm({...e,sublimite:String(e.sublimite)});setEditing(e.id);setModal(true);};
-  const save=()=>{const d={...form,sublimite:Number(form.sublimite)};editing?db.updE(editing,d):db.addE(d);setModal(false);};
+  const openEdit=e=>{setForm({...e,sublimite:String(e.sublimite),anexos:e.anexos||[e.anexo||"I"]});setEditing(e.id);setModal(true);};
+  const save=()=>{const d={...form,sublimite:Number(form.sublimite),anexo:(form.anexos||["I"])[0]};editing?db.updE(editing,d):db.addE(d);setModal(false);};
 
   return <div>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
@@ -1205,7 +1246,7 @@ function EmpresasPage({db}){
           <td style={{padding:"10px 12px",fontFamily:T.fm,fontSize:"11px",color:T.text}}>{e.cnpj}</td>
           <td style={{padding:"10px 12px",fontSize:"12px",fontWeight:600,color:T.text}}>{e.fantasia||e.razao}</td>
           <td style={{padding:"10px 12px",fontSize:"11px",color:T.tm}}>{e.cidade}/{e.uf}</td>
-          <td style={{padding:"10px 12px"}}><Badge>{e.anexo}</Badge></td>
+          <td style={{padding:"10px 12px"}}>{(e.anexos||[e.anexo]).map(a=><Badge key={a}>{a}</Badge>)}</td>
           <td style={{padding:"10px 12px",fontSize:"11px",fontFamily:T.fm,color:T.tm}}>{e.abertura}</td>
           <td style={{padding:"10px 12px"}}><Badge color={e.ativa?"success":"danger"}>{e.ativa?"Ativa":"Inativa"}</Badge></td>
           <td style={{padding:"10px 12px"}}><div style={{display:"flex",gap:3}}>
@@ -1225,7 +1266,19 @@ function EmpresasPage({db}){
         <Sel label="UF" value={form.uf} onChange={v=>{setForm(f=>({...f,uf:v,cidade:""}));}} options={UFS.map(u=>({v:u,l:u}))} required/>
         <Sel label="Cidade (domicílio ISS)" value={form.cidade} onChange={v=>setForm(f=>({...f,cidade:v}))} options={[{v:"",l:"Selecione..."},...(MUNICIPIOS_POR_UF[form.uf]||[]).map(c=>({v:c,l:c}))]} required/>
         <Sel label="Regime" value={form.regime} onChange={v=>setForm(f=>({...f,regime:v}))} options={[{v:"caixa",l:"Caixa"},{v:"competencia",l:"Competência"}]}/>
-        <Sel label="Anexo Padrão" value={form.anexo} onChange={v=>setForm(f=>({...f,anexo:v}))} options={ANEXO_OPTS} required/>
+      </div>
+      <div style={{marginTop:14}}>
+        <p style={{fontSize:"11px",fontWeight:700,color:T.tm,marginBottom:8}}>Anexos da Empresa (selecione todos que se aplicam)</p>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {ANEXO_OPTS.map(opt=>{
+            const sel=(form.anexos||[]).includes(opt.v);
+            return <button key={opt.v} onClick={()=>setForm(f=>{
+              const cur=f.anexos||[];
+              const next=sel?cur.filter(a=>a!==opt.v):[...cur,opt.v];
+              return{...f,anexos:next.length>0?next:cur};
+            })} style={{padding:"6px 12px",fontSize:"11px",fontWeight:sel?700:500,background:sel?T.pD:"transparent",color:sel?T.p:T.tm,border:`1px solid ${sel?T.p:T.border}`,borderRadius:T.rs,cursor:"pointer",fontFamily:T.f}}>{opt.l}</button>;
+          })}
+        </div>
       </div>
       {BENEFICIOS_UF[form.uf]&&<div style={{marginTop:14,padding:"8px 12px",background:T.okD,borderRadius:T.rs,fontSize:"11px",color:T.ok}}>
         <Check size={12} style={{display:"inline",marginRight:4}}/> Benefício ICMS {form.uf}: {BENEFICIOS_UF[form.uf].tipo} — {BENEFICIOS_UF[form.uf].base}
@@ -1297,8 +1350,9 @@ export default function App(){
   // Check for updates on startup (only works in Tauri desktop)
   useEffect(() => { checkForUpdates(setUpdateStatus); }, []);
 
-  // Apply theme
-  T = THEMES[config.tema] || THEMES.escuro;
+  // Apply theme — robust fallback to escuro
+  const currentTema = (config && config.tema === "claro") ? "claro" : "escuro";
+  T = THEMES[currentTema];
 
   const render=()=>{switch(page){
     case"dashboard":return <DashboardPage db={db} navigate={setPage} config={config}/>;
@@ -1317,17 +1371,17 @@ export default function App(){
       select option{background:${T.bgIn};color:${T.text}}input::placeholder{color:${T.td}}
     `}</style>
 
-    <aside style={{width:col?56:200,background:T.bgSide,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",transition:"width 0.25s",flexShrink:0,overflow:"hidden"}}>
-      <div style={{padding:col?"14px 8px":"14px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:8}}>
-        <div style={{width:30,height:30,borderRadius:"7px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",fontWeight:800,color:config.tema==="claro"?"#fff":T.bg}}>L</div>
-        {!col&&<div><p style={{fontSize:"13px",fontWeight:800,color:T.text,margin:0}}>LionSolver</p><p style={{fontSize:"8px",color:T.td,margin:0,letterSpacing:"0.08em",textTransform:"uppercase"}}>Simples Nacional</p></div>}
+    <aside style={{width:col?56:200,background:T.bgSide,borderRight:`1px solid ${T.sideBorder||T.border}`,display:"flex",flexDirection:"column",transition:"width 0.25s",flexShrink:0,overflow:"hidden"}}>
+      <div style={{padding:col?"14px 8px":"14px 16px",borderBottom:`1px solid ${T.sideBorder||T.border}`,display:"flex",alignItems:"center",gap:8}}>
+        <div style={{width:30,height:30,borderRadius:"7px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",fontWeight:800,color:"#fff"}}>L</div>
+        {!col&&<div><p style={{fontSize:"13px",fontWeight:800,color:T.sideText||T.text,margin:0}}>LionSolver</p><p style={{fontSize:"8px",color:T.sideTd||T.td,margin:0,letterSpacing:"0.08em",textTransform:"uppercase"}}>Simples Nacional</p></div>}
       </div>
       <nav style={{flex:1,padding:"8px 4px",display:"flex",flexDirection:"column",gap:1}}>
-        {NAV.map(n=>{const a=page===n.id;return <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:8,padding:col?"9px 0":"9px 10px",justifyContent:col?"center":"flex-start",background:a?T.pD:"transparent",color:a?T.p:T.tm,border:"none",borderRadius:T.rs,cursor:"pointer",fontFamily:T.f,fontSize:"12px",fontWeight:a?700:500,width:"100%",borderLeft:a?`3px solid ${T.p}`:"3px solid transparent"}}><n.icon size={15}/>{!col&&n.label}</button>;})}
+        {NAV.map(n=>{const a=page===n.id;return <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:8,padding:col?"9px 0":"9px 10px",justifyContent:col?"center":"flex-start",background:a?T.pD:"transparent",color:a?T.p:(T.sideTm||T.tm),border:"none",borderRadius:T.rs,cursor:"pointer",fontFamily:T.f,fontSize:"12px",fontWeight:a?700:500,width:"100%",borderLeft:a?`3px solid ${T.p}`:"3px solid transparent"}}><n.icon size={15}/>{!col&&n.label}</button>;})}
       </nav>
-      <div style={{padding:"8px 4px",borderTop:`1px solid ${T.border}`}}>
-        <button onClick={()=>setCol(!col)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"100%",padding:6,background:"transparent",border:"none",color:T.td,cursor:"pointer",borderRadius:T.rs,fontSize:"10px",fontFamily:T.f}}><Menu size={13}/>{!col&&<span style={{marginLeft:6}}>Recolher</span>}</button>
-        {!col&&<p style={{textAlign:"center",fontSize:"9px",color:T.td,margin:"6px 0 2px",fontFamily:T.fm}}>v{APP_VERSION}</p>}
+      <div style={{padding:"8px 4px",borderTop:`1px solid ${T.sideBorder||T.border}`}}>
+        <button onClick={()=>setCol(!col)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"100%",padding:6,background:"transparent",border:"none",color:T.sideTd||T.td,cursor:"pointer",borderRadius:T.rs,fontSize:"10px",fontFamily:T.f}}><Menu size={13}/>{!col&&<span style={{marginLeft:6}}>Recolher</span>}</button>
+        {!col&&<p style={{textAlign:"center",fontSize:"9px",color:T.sideTd||T.td,margin:"6px 0 2px",fontFamily:T.fm}}>v{APP_VERSION}</p>}
       </div>
     </aside>
 
