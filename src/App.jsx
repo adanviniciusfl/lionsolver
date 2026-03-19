@@ -402,23 +402,63 @@ function Modal({open,onClose,title,children,width=560}){if(!open)return null;ret
 function KPI({icon:I,label,value,sub,color=T.p}){return <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"16px 18px",flex:1,minWidth:160}}><div style={{display:"flex",justifyContent:"space-between"}}><div><p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</p><p style={{margin:"4px 0 0",fontSize:"22px",fontWeight:800,color:T.text}}>{value}</p>{sub&&<p style={{margin:"2px 0 0",fontSize:"10px",color:T.tm}}>{sub}</p>}</div><div style={{width:34,height:34,borderRadius:"8px",background:`${color}18`,display:"flex",alignItems:"center",justifyContent:"center"}}><I size={16} style={{color}}/></div></div></div>;}
 
 /* ══════════════════════════════════════════════════════════════
-   DATABASE
+   DATABASE — Persistente (salva no disco via localStorage)
    ══════════════════════════════════════════════════════════════ */
-const INIT_EMP=[
-  {id:"e1",cnpj:"12.345.678/0001-90",razao:"Tech Solutions Ltda",fantasia:"TechSol",abertura:"2019-03-15",regime:"caixa",uf:"BA",cidade:"Salvador",sublimite:3600000,anexo:"III/V",ativa:true},
-  {id:"e2",cnpj:"98.765.432/0001-10",razao:"Comércio Nordeste Eireli",fantasia:"NordesteCom",abertura:"2020-07-22",regime:"competencia",uf:"BA",cidade:"Camaçari",sublimite:3600000,anexo:"I",ativa:true},
-  {id:"e3",cnpj:"11.222.333/0001-44",razao:"IBA Foods Ltda",fantasia:"IBA Foods",abertura:"2025-10-20",regime:"caixa",uf:"BA",cidade:"Salvador",sublimite:3600000,anexo:"II",ativa:true},
-];
 
-function useDB(){
-  const[empresas,setE]=useState(INIT_EMP);
-  const[apuracoes,setA]=useState([]);
-  const addE=useCallback(d=>{const e={...d,id:genId(),ativa:true};setE(p=>[...p,e]);return e;},[]);
-  const updE=useCallback((id,d)=>setE(p=>p.map(e=>e.id===id?{...e,...d}:e)),[]);
-  const togE=useCallback(id=>setE(p=>p.map(e=>e.id===id?{...e,ativa:!e.ativa}:e)),[]);
-  const delE=useCallback(id=>setE(p=>p.filter(e=>e.id!==id)),[]);
-  const addA=useCallback(a=>{const ap={...a,id:genId(),created_at:new Date().toISOString()};setA(p=>[...p,ap]);return ap;},[]);
-  return{empresas,apuracoes,addE,updE,togE,delE,addA};
+// Helper: load from localStorage with fallback
+function loadData(key, fallback) {
+  try {
+    const raw = localStorage.getItem("lionsolver_" + key);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore parse errors */ }
+  return fallback;
+}
+
+// Helper: save to localStorage
+function saveData(key, data) {
+  try {
+    localStorage.setItem("lionsolver_" + key, JSON.stringify(data));
+  } catch (e) { /* ignore quota errors */ }
+}
+
+function useDB() {
+  const [empresas, setE] = useState(() => loadData("empresas", []));
+  const [apuracoes, setA] = useState(() => loadData("apuracoes", []));
+
+  // Persist whenever data changes
+  useEffect(() => { saveData("empresas", empresas); }, [empresas]);
+  useEffect(() => { saveData("apuracoes", apuracoes); }, [apuracoes]);
+
+  const addE = useCallback(d => {
+    const e = { ...d, id: genId(), ativa: true };
+    setE(p => [...p, e]);
+    return e;
+  }, []);
+  const updE = useCallback((id, d) => setE(p => p.map(e => e.id === id ? { ...e, ...d } : e)), []);
+  const togE = useCallback(id => setE(p => p.map(e => e.id === id ? { ...e, ativa: !e.ativa } : e)), []);
+  const delE = useCallback(id => setE(p => p.filter(e => e.id !== id)), []);
+  const addA = useCallback(a => {
+    const ap = { ...a, id: genId(), created_at: new Date().toISOString() };
+    setA(p => [...p, ap]);
+    return ap;
+  }, []);
+
+  // Import data (for backup restore)
+  const importData = useCallback((data) => {
+    if (data.empresas) setE(data.empresas);
+    if (data.apuracoes) setA(data.apuracoes);
+  }, []);
+
+  // Clear all data
+  const clearAll = useCallback(() => {
+    setE([]);
+    setA([]);
+    localStorage.removeItem("lionsolver_empresas");
+    localStorage.removeItem("lionsolver_apuracoes");
+    localStorage.removeItem("lionsolver_config");
+  }, []);
+
+  return { empresas, apuracoes, addE, updE, togE, delE, addA, importData, clearAll };
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -983,9 +1023,10 @@ function ConfigPage({config, setConfig, db}) {
       reader.onload = (ev) => {
         try {
           const data = JSON.parse(ev.target.result);
-          if (data.version !== "lionsolver-v3") { setImportMsg("Arquivo inválido ou versão incompatível"); return; }
+          if (data.version !== "lionsolver-v3") { setImportMsg("Arquivo invalido ou versao incompativel"); return; }
           if (data.config) setConfig(data.config);
-          setImportMsg("Backup importado com sucesso! Recarregue o app para ver os dados de empresas e apurações.");
+          if (data.empresas || data.apuracoes) db.importData(data);
+          setImportMsg("Backup importado com sucesso! Dados restaurados.");
         } catch (err) { setImportMsg("Erro ao ler arquivo: " + err.message); }
       };
       reader.readAsText(file);
@@ -1153,7 +1194,14 @@ export default function App(){
   const[page,setPage]=useState("dashboard");
   const[col,setCol]=useState(false);
   const[report,setReport]=useState(null);
-  const[config,setConfig]=useState({escritorio:"",contador:"",crc:"",ufPadrao:"BA",cidadePadrao:"Salvador",regimePadrao:"caixa",tema:"escuro"});
+  const[config,setConfigState]=useState(() => loadData("config", {escritorio:"",contador:"",crc:"",ufPadrao:"BA",cidadePadrao:"Salvador",regimePadrao:"caixa",tema:"escuro"}));
+  const setConfig = useCallback((updater) => {
+    setConfigState(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      saveData("config", next);
+      return next;
+    });
+  }, []);
   const[updateStatus,setUpdateStatus]=useState("idle");
   const db=useDB();
 
