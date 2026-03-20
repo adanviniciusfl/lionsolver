@@ -40,7 +40,7 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 
 const THEMES = {
   escuro: {
@@ -52,6 +52,7 @@ const THEMES = {
     err:"#F87171",errD:"rgba(248,113,113,0.12)",
     i:"#60A5FA",iD:"rgba(96,165,250,0.12)",
     r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
+    sideText:"#E8E6E1",sideTm:"#7A7F8E",sideTd:"#4A4F5E",sideBorder:"#252A36",
   },
   claro: {
     bg:"#F0F1F5",bgCard:"#FFFFFF",bgHov:"#E8E9EE",bgSide:"#1B2332",bgIn:"#F5F6FA",
