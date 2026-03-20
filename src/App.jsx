@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Search, Plus, Edit3, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, AlertTriangle, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload } from "lucide-react";
+import { Search, Plus, Edit3, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, AlertTriangle, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload, Info } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════
    AUTO-UPDATER (only runs in Tauri desktop, ignored in browser)
@@ -1325,9 +1325,86 @@ function HistoricoPage({db}){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   SOBRE PAGE
+   ══════════════════════════════════════════════════════════════ */
+function SobrePage() {
+  const CHANGELOG = [
+    {v:"1.4.0", desc:"Cadastro multi-anexo, quadro de alíquotas, ISS retido pelo tomador, terminologia corrigida"},
+    {v:"1.3.1", desc:"Teste de auto-update confirmado"},
+    {v:"1.3.0", desc:"Tema claro/escuro, versão no rodapé, impressão PDF, código limpo"},
+    {v:"1.1.0", desc:"Persistência de dados"},
+    {v:"1.0.0", desc:"Primeira versão"},
+  ];
+  const TUTORIAL = [
+    "Cadastre suas empresas em Empresas (selecione os anexos corretos)",
+    "Inicie uma apuração em Apuração (selecione empresa e competência)",
+    "Informe a RBT12 (simplificada ou detalhada mês a mês)",
+    "Adicione as subseções de receita com os valores do mês",
+    "Confira o resultado, quadro de alíquotas e exporte PDF/XLSX",
+    "Finalize para salvar no histórico",
+  ];
+  return <div>
+    {/* Cabeçalho */}
+    <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:28}}>
+      <div style={{width:52,height:52,borderRadius:"12px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"24px",fontWeight:800,color:"#fff",flexShrink:0}}>L</div>
+      <div>
+        <h1 style={{fontSize:"26px",fontWeight:800,color:T.text,margin:0,lineHeight:1.1}}>LionSolver</h1>
+        <p style={{color:T.tm,fontSize:"12px",margin:"3px 0 0"}}>Software de Apuração do Simples Nacional &nbsp;<span style={{fontFamily:T.fm,color:T.p}}>v{APP_VERSION}</span></p>
+      </div>
+    </div>
+
+    {/* Sobre o aplicativo */}
+    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
+      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><Info size={13} color={T.i}/>Sobre o Aplicativo</h3>
+      <p style={{fontSize:"13px",color:T.text,lineHeight:1.7,margin:"0 0 12px"}}>
+        O LionSolver calcula o DAS (Documento de Arrecadação do Simples Nacional) com suporte aos Anexos I–V, Fator R, benefícios de ICMS estaduais e ISS por município.
+      </p>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
+        <span style={{fontSize:"11px",padding:"3px 9px",borderRadius:T.rs,background:T.iD,color:T.i,fontWeight:600}}>LC 123/2006</span>
+        <span style={{fontSize:"11px",padding:"3px 9px",borderRadius:T.rs,background:T.iD,color:T.i,fontWeight:600}}>LC 155/2016</span>
+        <span style={{fontSize:"11px",padding:"3px 9px",borderRadius:T.rs,background:T.iD,color:T.i,fontWeight:600}}>CGSN 140/2018</span>
+      </div>
+      <p style={{fontSize:"12px",color:T.td,margin:0}}>Desenvolvido por <span style={{color:T.p,fontWeight:700}}>LionSolver</span></p>
+    </div>
+
+    {/* Changelog */}
+    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
+      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><History size={13} color={T.p}/>Histórico de Versões</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {CHANGELOG.map((c,i)=><div key={c.v} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"10px 12px",background:i===0?T.pD:T.bgIn,borderRadius:T.rs,border:i===0?`1px solid ${T.p}`:"none"}}>
+          <span style={{fontFamily:T.fm,fontSize:"12px",fontWeight:700,color:i===0?T.p:T.tm,flexShrink:0}}>v{c.v}</span>
+          <span style={{fontSize:"12px",color:T.text,lineHeight:1.5}}>{c.desc}</span>
+          {i===0&&<span style={{fontSize:"10px",padding:"2px 7px",borderRadius:T.rs,background:T.p,color:T.pText,fontWeight:700,flexShrink:0,marginLeft:"auto",alignSelf:"center"}}>ATUAL</span>}
+        </div>)}
+      </div>
+    </div>
+
+    {/* Tutorial rápido */}
+    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
+      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><FileText size={13} color={T.ok}/>Tutorial Rápido</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {TUTORIAL.map((step,i)=><div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"10px 12px",background:T.bgIn,borderRadius:T.rs}}>
+          <span style={{width:22,height:22,borderRadius:"50%",background:T.okD,border:`1px solid ${T.ok}`,color:T.ok,fontSize:"11px",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</span>
+          <span style={{fontSize:"12px",color:T.text,lineHeight:1.6,paddingTop:2}}>{step}</span>
+        </div>)}
+      </div>
+    </div>
+
+    {/* Contato / Suporte */}
+    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20}}>
+      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><Settings size={13} color={T.tm}/>Contato & Suporte</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        <p style={{fontSize:"12px",color:T.text,margin:0,display:"flex",alignItems:"center",gap:6}}><Check size={13} color={T.ok}/>Atualizações automáticas via internet</p>
+        <p style={{fontSize:"12px",color:T.text,margin:0,display:"flex",alignItems:"center",gap:6}}><Info size={13} color={T.i}/>GitHub: <span style={{fontFamily:T.fm,color:T.p}}>github.com/adanviniciusfl/lionsolver</span></p>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ══════════════════════════════════════════════════════════════
    APP SHELL
    ══════════════════════════════════════════════════════════════ */
-const NAV=[{id:"dashboard",label:"Dashboard",icon:LayoutDashboard},{id:"empresas",label:"Empresas",icon:Building2},{id:"apuracao",label:"Apuração",icon:Calculator},{id:"historico",label:"Histórico",icon:History},{id:"config",label:"Configurações",icon:Settings}];
+const NAV=[{id:"dashboard",label:"Dashboard",icon:LayoutDashboard},{id:"empresas",label:"Empresas",icon:Building2},{id:"apuracao",label:"Apuração",icon:Calculator},{id:"historico",label:"Histórico",icon:History},{id:"config",label:"Configurações",icon:Settings},{id:"sobre",label:"Sobre",icon:Info}];
 
 export default function App(){
   const[page,setPage]=useState("dashboard");
@@ -1360,6 +1437,7 @@ export default function App(){
     case"apuracao":return <ApuracaoPage db={db} navigate={setPage}/>;
     case"historico":return <HistoricoPage db={db}/>;
     case"config":return <ConfigPage config={config} setConfig={setConfig} db={db}/>;
+    case"sobre":return <SobrePage />;
     default:return <DashboardPage db={db} navigate={setPage} config={config}/>;
   }};
   return <div style={{display:"flex",height:"100vh",fontFamily:T.f,background:T.bg,color:T.text,overflow:"hidden"}}>
