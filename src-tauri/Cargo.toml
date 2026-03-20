@@ -1,7 +1,7 @@
 [package]
 name = "lionsolver"
 version = "1.5.0"
-description = "Software de Apuração do Simples Nacional"
+description = "Software de Apuracao do Simples Nacional"
 authors = ["LionSolver"]
 edition = "2021"
 
