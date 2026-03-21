@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Search, Plus, Pencil, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, TriangleAlert, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload, Info } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, TriangleAlert, TrendingUp, DollarSign, Archive, RotateCcw, MapPin, Settings, Download, Upload, Info } from "lucide-react";
 import * as XLSX from "xlsx";
 
 /* ══════════════════════════════════════════════════════════════
@@ -41,7 +41,7 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 
 const THEMES = {
   escuro: {
@@ -54,17 +54,72 @@ const THEMES = {
     i:"#bbc3ff",iD:"rgba(187, 195, 255, 0.12)",
     r:"16px",rs:"8px",f:"'Manrope','Inter',sans-serif",fm:"'Inter',monospace",
     sideText:"#e5e2e1",sideTm:"#8e90a2",sideTd:"#434656",sideBorder:"rgba(255,255,255,0.05)",
+    // Glass / UI tokens
+    glassCardBg:"rgba(22,21,21,0.60)",
+    glassCardBorder:"rgba(255,255,255,0.07)",
+    glassCardShadow:"0 4px 24px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05)",
+    glassHovShadow:"0 16px 48px rgba(0,0,0,0.44), 0 0 0 1px rgba(187,195,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08)",
+    glassHovBorder:"rgba(187,195,255,0.16)",
+    kpiHovShadow:"0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(187,195,255,0.16), inset 0 1px 0 rgba(255,255,255,0.09)",
+    kpiBeforeGrad:"linear-gradient(90deg, transparent, rgba(187,195,255,0.35), transparent)",
+    dockBg:"rgba(14,14,14,0.82)",dockBorder:"rgba(255,255,255,0.07)",
+    dockShadow:"0 24px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
+    dockBtnHovBg:"rgba(187,195,255,0.08)",dockBtnHovColor:"#dee0ff",
+    scrollThumb:"rgba(255,255,255,0.1)",scrollThumbHov:"rgba(187,195,255,0.25)",
+    monthCellBg:"rgba(255,255,255,0.025)",monthCellBorder:"rgba(255,255,255,0.06)",
+    monthCellHovBorder:"rgba(187,195,255,0.2)",monthCellHovBg:"rgba(187,195,255,0.04)",
+    monthInputBg:"rgba(255,255,255,0.04)",monthInputBorder:"rgba(255,255,255,0.08)",
+    monthInputColor:"#e5e2e1",monthInputDisabledColor:"rgba(255,255,255,0.2)",
+    monthLabelColor:"rgba(187,195,255,0.7)",
+    hoverRowBg:"rgba(187,195,255,0.04)",
+    btnGlow:"0 0 20px rgba(187,195,255,0.3), 0 4px 16px rgba(187,195,255,0.15)",
+    resultBg:"linear-gradient(135deg,rgba(187,195,255,0.07),rgba(0,218,243,0.05))",
+    resultBorder:"rgba(255,255,255,0.07)",
+    inpFocusGlow:"rgba(187,195,255,0.1)",inpFocusBorder:"#bbc3ff",
+    sectionGrad:"linear-gradient(180deg,#bbc3ff,#00daf3)",
+    dasGrad:"linear-gradient(90deg,#00daf3,#bbc3ff,#00daf3)",
+    headerBg:"rgba(14,14,14,0.4)",headerBorder:"rgba(255,255,255,0.04)",
+    appGrad:"radial-gradient(ellipse 80% 60% at 15% 80%, rgba(187,195,255,0.05) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 85% 20%, rgba(0,218,243,0.04) 0%, transparent 70%)",
+    avatarBg:"rgba(187,195,255,0.08)",avatarBorder:"rgba(187,195,255,0.15)",
   },
   claro: {
-    bg:"#F0F1F5",bgCard:"#FFFFFF",bgHov:"#E8E9EE",bgSide:"#1B2332",bgIn:"#F5F6FA",
-    border:"#D8DAE2",borderF:"#001d93",text:"#1A1D26",tm:"#5A5F70",td:"#9096A6",
-    p:"#002ccd",pH:"#001d93",pD:"rgba(0, 44, 205, 0.12)",pText:"#FFFFFF",
-    ok:"#007886",okD:"rgba(0, 120, 134, 0.10)",
-    w:"#D97706",wD:"rgba(217,119,6,0.10)",
-    err:"#DC2626",errD:"rgba(220,38,38,0.08)",
-    i:"#2848ee",iD:"rgba(40, 72, 238, 0.08)",
+    // Base Soft UI — off-white luxuoso, alto contraste
+    bg:"#F2F3F8",bgCard:"#FFFFFF",bgHov:"#E8EAF2",bgSide:"#1B2332",bgIn:"#ECEEF5",
+    border:"#D4D6E0",borderF:"#001d93",text:"#111318",tm:"#50566A",td:"#888EA4",
+    p:"#2848ee",pH:"#001d93",pD:"rgba(40,72,238,0.10)",pText:"#FFFFFF",
+    ok:"#006B78",okD:"rgba(0,107,120,0.10)",
+    w:"#C2670A",wD:"rgba(194,103,10,0.10)",
+    err:"#C41C1C",errD:"rgba(196,28,28,0.08)",
+    i:"#2848ee",iD:"rgba(40,72,238,0.08)",
     r:"16px",rs:"8px",f:"'Manrope','Inter',sans-serif",fm:"'Inter',monospace",
     sideText:"#e5e2e1",sideTm:"#7A7F8E",sideTd:"#4A4F5E",sideBorder:"#252A36",
+    // Glass / UI tokens — Soft UI claro
+    glassCardBg:"rgba(255,255,255,0.78)",
+    glassCardBorder:"rgba(255,255,255,0.92)",
+    glassCardShadow:"0 4px 20px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.90)",
+    glassHovShadow:"0 12px 36px rgba(0,0,0,0.11), 0 0 0 1px rgba(40,72,238,0.12), inset 0 1px 0 rgba(255,255,255,0.90)",
+    glassHovBorder:"rgba(40,72,238,0.20)",
+    kpiHovShadow:"0 12px 36px rgba(0,0,0,0.10), 0 0 0 1px rgba(40,72,238,0.16), inset 0 1px 0 rgba(255,255,255,0.90)",
+    kpiBeforeGrad:"linear-gradient(90deg, transparent, rgba(40,72,238,0.30), transparent)",
+    dockBg:"rgba(255,255,255,0.88)",dockBorder:"rgba(212,214,224,0.85)",
+    dockShadow:"0 8px 32px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.90)",
+    dockBtnHovBg:"rgba(40,72,238,0.07)",dockBtnHovColor:"#001d93",
+    scrollThumb:"rgba(0,0,0,0.13)",scrollThumbHov:"rgba(40,72,238,0.22)",
+    monthCellBg:"rgba(255,255,255,0.65)",monthCellBorder:"rgba(0,0,0,0.08)",
+    monthCellHovBorder:"rgba(40,72,238,0.22)",monthCellHovBg:"rgba(40,72,238,0.04)",
+    monthInputBg:"rgba(255,255,255,0.90)",monthInputBorder:"rgba(0,0,0,0.10)",
+    monthInputColor:"#111318",monthInputDisabledColor:"rgba(0,0,0,0.22)",
+    monthLabelColor:"rgba(40,72,238,0.70)",
+    hoverRowBg:"rgba(40,72,238,0.04)",
+    btnGlow:"0 0 20px rgba(40,72,238,0.22), 0 4px 16px rgba(40,72,238,0.13)",
+    resultBg:"linear-gradient(135deg,rgba(40,72,238,0.05),rgba(0,107,120,0.04))",
+    resultBorder:"rgba(0,0,0,0.07)",
+    inpFocusGlow:"rgba(0,29,147,0.09)",inpFocusBorder:"#001d93",
+    sectionGrad:"linear-gradient(180deg,#2848ee,#006B78)",
+    dasGrad:"linear-gradient(90deg,#006B78,#2848ee,#006B78)",
+    headerBg:"rgba(255,255,255,0.76)",headerBorder:"rgba(0,0,0,0.06)",
+    appGrad:"radial-gradient(ellipse 80% 60% at 15% 80%, rgba(40,72,238,0.04) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 85% 20%, rgba(0,107,120,0.03) 0%, transparent 70%)",
+    avatarBg:"rgba(40,72,238,0.08)",avatarBorder:"rgba(40,72,238,0.18)",
   },
 };
 
@@ -958,15 +1013,18 @@ function ApuracaoPage({db,navigate}){
         </div>)}
 
         {/* ISS Retido pelo tomador */}
-        {resultado.resultados.some(r=>r.issRetido&&r.valorISSRetido>0)&&<>
-          <h4 style={{fontSize:"11px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"16px 0 8px"}}>ISS a ser Recolhido pelo Tomador</h4>
-          <div style={{background:T.wD,borderRadius:T.r,padding:"10px 14px",marginBottom:8}}>
-            {resultado.resultados.filter(r=>r.issRetido&&r.valorISSRetido>0).map((r,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",borderBottom:i<resultado.resultados.filter(x=>x.issRetido).length-1?`1px solid ${T.border}`:"none"}}>
-              <span style={{fontSize:"12px",color:T.text}}>{r.tipo} — {fBRL(r.receita)}</span>
-              <span style={{fontSize:"14px",fontWeight:700,fontFamily:T.fm,color:T.w}}>ISS Retido: {fBRL(r.valorISSRetido)}</span>
-            </div>)}
-          </div>
-        </>}
+        {resultado.resultados.some(r=>r.issRetido&&r.valorISSRetido>0)&&(()=>{
+          const issRetidos = resultado.resultados.filter(r=>r.issRetido&&r.valorISSRetido>0);
+          return <>
+            <h4 style={{fontSize:"11px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"16px 0 8px"}}>ISS a ser Recolhido pelo Tomador</h4>
+            <div style={{background:T.wD,borderRadius:T.r,padding:"10px 14px",marginBottom:8}}>
+              {issRetidos.map((r,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",borderBottom:i<issRetidos.length-1?`1px solid ${T.border}`:"none"}}>
+                <span style={{fontSize:"12px",color:T.text}}>{r.tipo} — {fBRL(r.receita)}</span>
+                <span style={{fontSize:"14px",fontWeight:700,fontFamily:T.fm,color:T.w}}>ISS Retido: {fBRL(r.valorISSRetido)}</span>
+              </div>)}
+            </div>
+          </>;
+        })()}
 
         {/* Quadro de Alíquotas */}
         {resultado.quadroAliquotas&&resultado.quadroAliquotas.length>0&&<>
@@ -1047,7 +1105,10 @@ function DashboardPage({db, navigate, config}) {
   const maxEmpDas = Math.max(...empChart.map(e => e[1]), 1);
 
   // Pending apurações (empresas ativas sem apuração no mês atual)
-  const mesAtual = "2026-03";
+  const _hoje = new Date();
+  const mesAtual = `${_hoje.getFullYear()}-${String(_hoje.getMonth()+1).padStart(2,"0")}`;
+  const mesAtualLabel = _hoje.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+  const mesAtualCurto = `${String(_hoje.getMonth()+1).padStart(2,"0")}/${_hoje.getFullYear()}`;
   const empComApuracao = new Set(apuracoesFiltradas.filter(a => a.competencia === mesAtual).map(a => a.empresa_id));
   const pendentes = ativasFiltradas.filter(e => !empComApuracao.has(e.id));
 
@@ -1058,7 +1119,7 @@ function DashboardPage({db, navigate, config}) {
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
       <div>
         <h1 style={{fontSize:"28px",fontWeight:800,color:T.text,margin:"0 0 4px",fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.03em",lineHeight:1.15}}>Dashboard</h1>
-        <p style={{color:T.tm,fontSize:"13px",margin:0,fontWeight:500}}>{config.escritorio || "LionSolver"} <span style={{color:T.td,margin:"0 4px"}}>·</span> Março 2026</p>
+        <p style={{color:T.tm,fontSize:"13px",margin:0,fontWeight:500}}>{config.escritorio || "LionSolver"} <span style={{color:T.td,margin:"0 4px"}}>·</span> {mesAtualLabel.charAt(0).toUpperCase()+mesAtualLabel.slice(1)}</p>
       </div>
       <div style={{display:"flex",gap:10,alignItems:"center"}}>
         <Sel value={empresaFiltro} onChange={setEmpresaFiltro} options={[{v:"todas",l:"Todas as empresas"},...ativas.map(e => ({v:e.id,l:e.fantasia||e.razao}))]} style={{minWidth:190}}/>
@@ -1071,7 +1132,7 @@ function DashboardPage({db, navigate, config}) {
       <KPI icon={Building2} label="Empresas Ativas" value={ativasFiltradas.length} sub={`${db.empresas.length} cadastradas`}/>
       <KPI icon={DollarSign} label="DAS Total Apurado" value={fBRL(totalDas)} color={T.ok}/>
       <KPI icon={Calculator} label="Apurações" value={apuracoesFiltradas.length} sub="finalizadas" color={T.i}/>
-      <KPI icon={TriangleAlert} label="Pendentes (03/2026)" value={pendentes.length} sub={pendentes.length > 0 ? "empresas sem apuração" : "tudo em dia"} color={pendentes.length > 0 ? T.w : T.ok}/>
+      <KPI icon={TriangleAlert} label={`Pendentes (${mesAtualCurto})`} value={pendentes.length} sub={pendentes.length > 0 ? "empresas sem apuração" : "tudo em dia"} color={pendentes.length > 0 ? T.w : T.ok}/>
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
@@ -1364,11 +1425,13 @@ function HistoricoPage({db}){
    ══════════════════════════════════════════════════════════════ */
 function SobrePage() {
   const CHANGELOG = [
-    {v:"1.4.0", desc:"Cadastro multi-anexo, quadro de alíquotas, ISS retido pelo tomador, terminologia corrigida"},
-    {v:"1.3.1", desc:"Teste de auto-update confirmado"},
-    {v:"1.3.0", desc:"Tema claro/escuro, versão no rodapé, impressão PDF, código limpo"},
-    {v:"1.1.0", desc:"Persistência de dados"},
-    {v:"1.0.0", desc:"Primeira versão"},
+    {v:"1.7.0", desc:"Fase C: Toggle de RBT12 Detalhada/Simplificada no módulo de apuração; Soft UI Light Theme com paleta off-white, sombras suaves e alto contraste para o tema claro"},
+    {v:"1.6.0", desc:"Fase B: Menu Flutuante com dock glassmorphism e navegação animada; Dark Mode Obsidian com tokens de design completos, gradientes radiais e efeitos de brilho"},
+    {v:"1.5.0", desc:"Filtro de período no Dashboard com seleção de mês/ano; exportação de relatório para Excel via SheetJS com formatação de células"},
+    {v:"1.4.0", desc:"Cadastro multi-anexo (I–V), quadro interativo de alíquotas por faixa, ISS retido pelo tomador e revisão geral de terminologia fiscal"},
+    {v:"1.3.0", desc:"Alternância de tema claro/escuro, exibição de versão no rodapé, exportação para PDF e refatoração do código"},
+    {v:"1.1.0", desc:"Persistência local de dados com armazenamento no sistema de arquivos via Tauri"},
+    {v:"1.0.0", desc:"Primeira versão: cálculo do DAS para Anexos I–V, Fator R e benefícios estaduais de ICMS"},
   ];
   const TUTORIAL = [
     "Cadastre suas empresas em Empresas (selecione os anexos corretos)",
@@ -1475,92 +1538,92 @@ export default function App(){
     case"sobre":return <SobrePage />;
     default:return <DashboardPage db={db} navigate={setPage} config={config}/>;
   }};
-  return <div style={{display:"flex",flexDirection:"column",height:"100vh",fontFamily:T.f,background:`radial-gradient(ellipse 80% 60% at 15% 80%, rgba(187,195,255,0.05) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 85% 20%, rgba(0,218,243,0.04) 0%, transparent 70%), ${T.bg}`,color:T.text,overflow:"hidden",position:"relative"}}>
+  return <div style={{display:"flex",flexDirection:"column",height:"100vh",fontFamily:T.f,background:`${T.appGrad}, ${T.bg}`,color:T.text,overflow:"hidden",position:"relative"}}>
     <ReportModal report={report} onClose={() => setReport(null)} />
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
       *{box-sizing:border-box;margin:0;padding:0}
-      ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:rgba(187,195,255,0.25)}
+      ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:${T.scrollThumb};border-radius:3px}::-webkit-scrollbar-thumb:hover{background:${T.scrollThumbHov}}
       select option{background:${T.bgIn};color:${T.text}}input::placeholder{color:${T.td}}
       .floating-dock {
         position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
         display: flex; gap: 6px; padding: 10px 20px;
-        background: rgba(14,14,14,0.82); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
-        border: 1px solid rgba(255,255,255,0.07); border-radius: 100px;
-        box-shadow: 0 24px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06); z-index: 1000;
+        background: ${T.dockBg}; backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid ${T.dockBorder}; border-radius: 100px;
+        box-shadow: ${T.dockShadow}; z-index: 1000;
         transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
       }
       .dock-btn { transition: all 0.22s cubic-bezier(0.16,1,0.3,1) !important; }
-      .dock-btn:hover { background: rgba(187,195,255,0.08) !important; color: #dee0ff !important; }
+      .dock-btn:hover { background: ${T.dockBtnHovBg} !important; color: ${T.dockBtnHovColor} !important; }
       .dock-hidden { transform: translate(-50%, 150%); opacity: 0; pointer-events: none; }
       .app-main { flex: 1; overflow: auto; padding: 28px 44px 110px; }
       .card-glass {
-        background: rgba(22,21,21,0.60) !important;
+        background: ${T.glassCardBg} !important;
         backdrop-filter: blur(24px) saturate(160%);
         -webkit-backdrop-filter: blur(24px) saturate(160%);
-        border: 1px solid rgba(255,255,255,0.07) !important;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid ${T.glassCardBorder} !important;
+        box-shadow: ${T.glassCardShadow};
         transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), box-shadow 0.28s ease, border-color 0.28s ease;
       }
       .card-glass:hover {
         transform: translateY(-2px);
-        box-shadow: 0 16px 48px rgba(0,0,0,0.44), 0 0 0 1px rgba(187,195,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
-        border-color: rgba(187,195,255,0.16) !important;
+        box-shadow: ${T.glassHovShadow};
+        border-color: ${T.glassHovBorder} !important;
       }
       .kpi-glass {
-        background: rgba(22,21,21,0.60) !important;
+        background: ${T.glassCardBg} !important;
         backdrop-filter: blur(24px) saturate(160%);
         -webkit-backdrop-filter: blur(24px) saturate(160%);
-        border: 1px solid rgba(255,255,255,0.07) !important;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid ${T.glassCardBorder} !important;
+        box-shadow: ${T.glassCardShadow};
         transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease, border-color 0.3s ease;
         position: relative; overflow: hidden;
       }
       .kpi-glass::before {
         content: '';
         position: absolute; top: 0; left: 0; right: 0; height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(187,195,255,0.35), transparent);
+        background: ${T.kpiBeforeGrad};
         opacity: 0; transition: opacity 0.3s ease;
       }
       .kpi-glass:hover { transform: translateY(-4px) scale(1.012); }
       .kpi-glass:hover::before { opacity: 1; }
-      .kpi-glass:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(187,195,255,0.16), inset 0 1px 0 rgba(255,255,255,0.09); border-color: rgba(187,195,255,0.2) !important; }
+      .kpi-glass:hover { box-shadow: ${T.kpiHovShadow}; border-color: ${T.glassHovBorder} !important; }
       .hover-row { transition: background 0.18s ease; cursor: default; }
-      .hover-row:hover { background: rgba(187,195,255,0.04) !important; }
+      .hover-row:hover { background: ${T.hoverRowBg} !important; }
       .btn-primary { transition: all 0.22s cubic-bezier(0.16,1,0.3,1) !important; }
-      .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 20px rgba(187,195,255,0.3), 0 4px 16px rgba(187,195,255,0.15) !important; }
+      .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: ${T.btnGlow} !important; }
       .btn-primary:active:not(:disabled) { transform: translateY(0px); }
       .month-cell {
         display: flex; flex-direction: column; gap: 5px;
         padding: 10px; border-radius: 10px;
-        background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06);
+        background: ${T.monthCellBg}; border: 1px solid ${T.monthCellBorder};
         transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
       }
-      .month-cell:hover:not(.month-disabled) { border-color: rgba(187,195,255,0.2); background: rgba(187,195,255,0.04); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+      .month-cell:hover:not(.month-disabled) { border-color: ${T.monthCellHovBorder}; background: ${T.monthCellHovBg}; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
       .month-cell.month-disabled { opacity: 0.28; }
-      .month-cell-label { font-size: 10px; font-family: 'Inter', monospace; font-weight: 600; color: rgba(187,195,255,0.7); letter-spacing: 0.04em; }
+      .month-cell-label { font-size: 10px; font-family: 'Inter', monospace; font-weight: 600; color: ${T.monthLabelColor}; letter-spacing: 0.04em; }
       .month-cell-input {
         width: 100%; padding: 5px 7px;
-        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 6px; color: #e5e2e1; font-size: 11px;
+        background: ${T.monthInputBg}; border: 1px solid ${T.monthInputBorder};
+        border-radius: 6px; color: ${T.monthInputColor}; font-size: 11px;
         font-family: 'Inter', monospace; outline: none; box-sizing: border-box;
         transition: border-color 0.2s, box-shadow 0.2s;
       }
-      .month-cell-input:focus { border-color: rgba(187,195,255,0.4); box-shadow: 0 0 0 3px rgba(187,195,255,0.08); }
-      .month-cell-input:disabled { cursor: not-allowed; background: transparent; border-color: transparent; color: rgba(255,255,255,0.2); }
-      .month-cell-input::placeholder { color: rgba(255,255,255,0.2); }
+      .month-cell-input:focus { border-color: ${T.inpFocusBorder}; box-shadow: 0 0 0 3px ${T.inpFocusGlow}; }
+      .month-cell-input:disabled { cursor: not-allowed; background: transparent; border-color: transparent; color: ${T.monthInputDisabledColor}; }
+      .month-cell-input::placeholder { color: ${T.monthInputDisabledColor}; }
       .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 8px; }
-      .section-label::before { content:''; display:inline-block; width:3px; height:13px; border-radius:2px; background:linear-gradient(180deg,#bbc3ff,#00daf3); flex-shrink:0; }
-      .inp-focus-glow:focus { box-shadow: 0 0 0 3px rgba(187,195,255,0.1) !important; border-color: #bbc3ff !important; }
+      .section-label::before { content:''; display:inline-block; width:3px; height:13px; border-radius:2px; background:${T.sectionGrad}; flex-shrink:0; }
+      .inp-focus-glow:focus { box-shadow: 0 0 0 3px ${T.inpFocusGlow} !important; border-color: ${T.inpFocusBorder} !important; }
       .chart-bar { transition: filter 0.2s, transform 0.2s; }
       .chart-bar:hover { filter: brightness(1.2); transform: scaleY(1.04); transform-origin: bottom; }
       .stepper-bar { transition: all 0.35s cubic-bezier(0.16,1,0.3,1); }
-      .result-summary { background: linear-gradient(135deg,rgba(187,195,255,0.07),rgba(0,218,243,0.05)) !important; border: 1px solid rgba(255,255,255,0.07) !important; }
+      .result-summary { background: ${T.resultBg} !important; border: 1px solid ${T.resultBorder} !important; }
       @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
-      .das-value { background: linear-gradient(90deg,#00daf3,#bbc3ff,#00daf3); background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite; }
+      .das-value { background: ${T.dasGrad}; background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite; }
     `}</style>
 
-    <header style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 44px",background:"rgba(14,14,14,0.4)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.04)",zIndex:10,flexShrink:0}}>
+    <header style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 44px",background:T.headerBg,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:`1px solid ${T.headerBorder}`,zIndex:10,flexShrink:0}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <div style={{width:34,height:34,borderRadius:"10px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",fontWeight:900,color:"#131313",boxShadow:`0 0 20px ${T.p}40`}}>L</div>
         <div>
@@ -1569,7 +1632,7 @@ export default function App(){
         </div>
       </div>
       <div style={{display:"flex",gap:12,alignItems:"center"}}>
-        <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(187,195,255,0.08)",border:"1px solid rgba(187,195,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"13px",fontWeight:700,color:T.p,fontFamily:T.f}}>U</span></div>
+        <div style={{width:32,height:32,borderRadius:"50%",background:T.avatarBg,border:`1px solid ${T.avatarBorder}`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"13px",fontWeight:700,color:T.p,fontFamily:T.f}}>U</span></div>
       </div>
     </header>
 
