@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { Search, Plus, Pencil, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, TriangleAlert, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload, Info } from "lucide-react";
+import * as XLSX from "xlsx";
 
 /* ══════════════════════════════════════════════════════════════
    AUTO-UPDATER (only runs in Tauri desktop, ignored in browser)
@@ -40,7 +41,7 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 
 const THEMES = {
   escuro: {
@@ -354,32 +355,44 @@ ${(res.quadroAliquotas && res.quadroAliquotas.length > 0) ? `<div style="font-si
 </div>`;
 }
 
-function buildXLSVData(res, emp, comp) {
+function buildXLSXWorkbook(res, emp, comp) {
   const compLabel = (comp || "").split("-").reverse().join("/");
-  const sep = "\t";
-  let csv = "LIONSOLVER — APURAÇÃO DO SIMPLES NACIONAL\n";
-  csv += `Empresa${sep}${emp.razao || emp.empresa_nome || ""}${sep}CNPJ${sep}${emp.cnpj || ""}\n`;
-  csv += `Competência${sep}${compLabel}${sep}UF${sep}${emp.uf || ""}/${emp.cidade || ""}\n`;
-  csv += `RBT12${sep}${res.rbt12}${sep}Fator r${sep}${(res.fatorR * 100).toFixed(2)}%\n`;
-  csv += `DAS a Recolher${sep}${res.valorDAS}\n\n`;
-  csv += "MEMÓRIA DE CÁLCULO\n";
-  csv += `Subseção${sep}Anexo${sep}Faixa${sep}Receita${sep}Alíq.Nominal${sep}PD${sep}Alíq.Efetiva${sep}Valor\n`;
-  for (const r of (res.resultados || [])) {
-    csv += `${r.tipo}${sep}${r.anexo}${sep}${r.faixa}ª${sep}${r.receita}${sep}${(r.an * 100).toFixed(2)}%${sep}${r.pd}${sep}${(r.ae * 100).toFixed(4)}%${sep}${r.valorLiquido.toFixed(2)}\n`;
-  }
-  csv += "\nDISTRIBUIÇÃO POR TRIBUTO\n";
-  for (const r of (res.resultados || [])) {
-    csv += `\n${r.tipo} — Anexo ${r.anexo}\n`;
-    csv += `Tributo${sep}Percentual${sep}Valor${sep}Deduzido\n`;
+  const resultados = res.resultados || [];
+  const alertas = res.alertas || [];
+
+  // Sheet 1 — Resumo
+  const resumoAOA = [
+    ["LIONSOLVER — APURAÇÃO DO SIMPLES NACIONAL"],
+    [],
+    ["Empresa", emp.razao || emp.empresa_nome || "", "CNPJ", emp.cnpj || ""],
+    ["Competência", compLabel, "UF/Cidade", `${emp.uf || ""}/${emp.cidade || ""}`],
+    ["RBT12", res.rbt12, "Fator r", `${(res.fatorR * 100).toFixed(2)}%`],
+    ["DAS a Recolher", res.valorDAS],
+  ];
+
+  // Sheet 2 — Memória de Cálculo
+  const memoriaAOA = [
+    ["Subseção", "Anexo", "Faixa", "Receita", "Alíq.Nominal", "PD", "Alíq.Efetiva", "Valor"],
+    ...resultados.map(r => [r.tipo, r.anexo, `${r.faixa}ª`, r.receita, `${(r.an * 100).toFixed(2)}%`, r.pd, `${(r.ae * 100).toFixed(4)}%`, r.valorLiquido.toFixed(2)]),
+  ];
+
+  // Sheet 3 — Distribuição por Tributo (linhas achatadas)
+  const distAOA = [["Subseção", "Anexo", "Tributo", "Percentual", "Valor", "Deduzido"]];
+  for (const r of resultados) {
     for (const [t, d] of Object.entries(r.dist)) {
-      csv += `${t}${sep}${(d.pct * 100).toFixed(2)}%${sep}${d.valor.toFixed(2)}${sep}${d.deduzido ? "Sim" : "Não"}\n`;
+      distAOA.push([r.tipo, r.anexo, t, `${(d.pct * 100).toFixed(2)}%`, d.valor.toFixed(2), d.deduzido ? "Sim" : "Não"]);
     }
   }
-  if ((res.alertas || []).length > 0) {
-    csv += "\nALERTAS FISCAIS\n";
-    for (const a of res.alertas) csv += `${a.sev.toUpperCase()}${sep}${a.msg}\n`;
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumoAOA), "Resumo");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(memoriaAOA), "Memória de Cálculo");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(distAOA), "Distribuição");
+  if (alertas.length > 0) {
+    const alertasAOA = [["Severidade", "Mensagem"], ...alertas.map(a => [a.sev.toUpperCase(), a.msg])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(alertasAOA), "Alertas");
   }
-  return csv;
+  return wb;
 }
 
 // Shared state for report modal — will be used by ReportModal component
@@ -391,9 +404,10 @@ function gerarPDF(res, emp, comp) {
 
 function gerarXLSX(res, emp, comp) {
   if (_setReportModal) {
-    const csv = buildXLSVData(res, emp, comp);
-    const dataUri = "data:application/vnd.ms-excel;charset=utf-8," + encodeURIComponent("\uFEFF" + csv);
-    _setReportModal({ type: "xlsx", dataUri, filename: `LionSolver_${emp.fantasia || emp.razao || ""}_${comp}.xls`, title: "Exportar Planilha" });
+    const wb = buildXLSXWorkbook(res, emp, comp);
+    const b64 = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
+    const dataUri = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${b64}`;
+    _setReportModal({ type: "xlsx", dataUri, filename: `LionSolver_${emp.fantasia || emp.razao || ""}_${comp}.xlsx`, title: "Exportar Planilha" });
   }
 }
 
@@ -434,7 +448,7 @@ function ReportModal({ report, onClose }) {
           <span style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a1a" }}>{report.title}</span>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {report.type === "pdf" && <button onClick={handlePrint} style={{ padding: "6px 14px", background: "#1B3A5C", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Imprimir / Salvar PDF</button>}
-            {report.type === "xlsx" && <a href={report.dataUri} download={report.filename} style={{ padding: "6px 14px", background: "#1B3A5C", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}>Baixar .XLS</a>}
+            {report.type === "xlsx" && <a href={report.dataUri} download={report.filename} style={{ padding: "6px 14px", background: "#1B3A5C", color: "#fff", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}>Baixar .XLSX</a>}
             <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", color: "#888" }}>✕</button>
           </div>
         </div>
@@ -1002,29 +1016,33 @@ function ApuracaoPage({db,navigate}){
    OUTRAS PÁGINAS
    ══════════════════════════════════════════════════════════════ */
 function DashboardPage({db, navigate, config}) {
+  const [empresaFiltro, setEmpresaFiltro] = useState("todas");
   const ativas = db.empresas.filter(e => e.ativa);
-  const totalDas = db.apuracoes.reduce((s, a) => s + a.valorDAS, 0);
-  const recentes = [...db.apuracoes].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5);
+  const apuracoesFiltradas = empresaFiltro === "todas" ? db.apuracoes : db.apuracoes.filter(a => a.empresa_id === empresaFiltro);
+  const ativasFiltradas = empresaFiltro === "todas" ? ativas : ativas.filter(e => e.id === empresaFiltro);
+
+  const totalDas = apuracoesFiltradas.reduce((s, a) => s + a.valorDAS, 0);
+  const recentes = [...apuracoesFiltradas].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5);
 
   // DAS by month for chart
   const dasPorMes = {};
-  db.apuracoes.forEach(a => { dasPorMes[a.competencia] = (dasPorMes[a.competencia] || 0) + a.valorDAS; });
+  apuracoesFiltradas.forEach(a => { dasPorMes[a.competencia] = (dasPorMes[a.competencia] || 0) + a.valorDAS; });
   const mesesChart = Object.keys(dasPorMes).sort().slice(-6);
   const maxDas = Math.max(...mesesChart.map(m => dasPorMes[m]), 1);
 
   // DAS by empresa
   const dasPorEmp = {};
-  db.apuracoes.forEach(a => { dasPorEmp[a.empresa_nome] = (dasPorEmp[a.empresa_nome] || 0) + a.valorDAS; });
+  apuracoesFiltradas.forEach(a => { dasPorEmp[a.empresa_nome] = (dasPorEmp[a.empresa_nome] || 0) + a.valorDAS; });
   const empChart = Object.entries(dasPorEmp).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const maxEmpDas = Math.max(...empChart.map(e => e[1]), 1);
 
   // Pending apurações (empresas ativas sem apuração no mês atual)
   const mesAtual = "2026-03";
-  const empComApuracao = new Set(db.apuracoes.filter(a => a.competencia === mesAtual).map(a => a.empresa_id));
-  const pendentes = ativas.filter(e => !empComApuracao.has(e.id));
+  const empComApuracao = new Set(apuracoesFiltradas.filter(a => a.competencia === mesAtual).map(a => a.empresa_id));
+  const pendentes = ativasFiltradas.filter(e => !empComApuracao.has(e.id));
 
-  // Alertas from recent apurações
-  const alertasRecentes = db.apuracoes.flatMap(a => (a.alertas || []).map(al => ({...al, emp: a.empresa_nome, comp: a.competencia}))).slice(0, 4);
+  // Alertas from filtered apurações
+  const alertasRecentes = apuracoesFiltradas.flatMap(a => (a.alertas || []).map(al => ({...al, emp: a.empresa_nome, comp: a.competencia}))).slice(0, 4);
 
   return <div>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
@@ -1032,14 +1050,17 @@ function DashboardPage({db, navigate, config}) {
         <h1 style={{fontSize:"24px",fontWeight:800,color:T.text,margin:"0 0 4px"}}>Dashboard</h1>
         <p style={{color:T.tm,fontSize:"13px",margin:0}}>{config.escritorio || "LionSolver"} — Março 2026</p>
       </div>
-      <Btn icon={ChevronRight} onClick={() => navigate("apuracao")}>Nova Apuração</Btn>
+      <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <Sel value={empresaFiltro} onChange={setEmpresaFiltro} options={[{v:"todas",l:"Todas as empresas"},...ativas.map(e => ({v:e.id,l:e.fantasia||e.razao}))]} style={{minWidth:180}}/>
+        <Btn icon={ChevronRight} onClick={() => navigate("apuracao")}>Nova Apuração</Btn>
+      </div>
     </div>
 
     {/* KPIs */}
     <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:20}}>
-      <KPI icon={Building2} label="Empresas Ativas" value={ativas.length} sub={`${db.empresas.length} cadastradas`}/>
+      <KPI icon={Building2} label="Empresas Ativas" value={ativasFiltradas.length} sub={`${db.empresas.length} cadastradas`}/>
       <KPI icon={DollarSign} label="DAS Total Apurado" value={fBRL(totalDas)} color={T.ok}/>
-      <KPI icon={Calculator} label="Apurações" value={db.apuracoes.length} sub="finalizadas" color={T.i}/>
+      <KPI icon={Calculator} label="Apurações" value={apuracoesFiltradas.length} sub="finalizadas" color={T.i}/>
       <KPI icon={TriangleAlert} label="Pendentes (03/2026)" value={pendentes.length} sub={pendentes.length > 0 ? "empresas sem apuração" : "tudo em dia"} color={pendentes.length > 0 ? T.w : T.ok}/>
     </div>
 
