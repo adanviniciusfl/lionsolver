@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Search, Plus, Edit3, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, AlertTriangle, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload, Info } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, TriangleAlert, TrendingUp, DollarSign, Archive, RotateCcw, Menu, MapPin, Settings, Download, Upload, Info } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════
    AUTO-UPDATER (only runs in Tauri desktop, ignored in browser)
@@ -863,7 +863,7 @@ function ApuracaoPage({db,navigate}){
 
         {/* Proporcionalização alert */}
         {emp&&emp.abertura&&getRBT12()>0&&calcRBT12Proporcional(getRBT12(),emp.abertura,comp).proporcional&&<div style={{marginTop:12,padding:"10px 14px",background:T.iD,borderRadius:T.rs,fontSize:"12px",color:T.i}}>
-          <AlertTriangle size={13} style={{display:"inline",marginRight:6}}/>
+          <TriangleAlert size={13} style={{display:"inline",marginRight:6}}/>
           <strong>RBT12 Proporcionalizada:</strong> Empresa com menos de 12 meses de atividade (abertura: {emp.abertura}). A RBT12 será ajustada automaticamente no cálculo. Base: LC 123/2006 Art.3º §2º
         </div>}
 
@@ -890,7 +890,7 @@ function ApuracaoPage({db,navigate}){
 
         {/* Alertas */}
         {resultado.alertas.map((a,i)=><div key={i} style={{padding:"8px 12px",marginBottom:6,borderRadius:T.rs,background:a.sev==="critico"?T.errD:a.sev==="aviso"?T.wD:T.iD,display:"flex",gap:6,alignItems:"center"}}>
-          <AlertTriangle size={12} style={{color:a.sev==="critico"?T.err:a.sev==="aviso"?T.w:T.i,flexShrink:0}}/>
+          <TriangleAlert size={12} style={{color:a.sev==="critico"?T.err:a.sev==="aviso"?T.w:T.i,flexShrink:0}}/>
           <span style={{fontSize:"11px",color:a.sev==="critico"?T.err:a.sev==="aviso"?T.w:T.i}}>{a.msg}</span>
         </div>)}
 
@@ -1040,7 +1040,7 @@ function DashboardPage({db, navigate, config}) {
       <KPI icon={Building2} label="Empresas Ativas" value={ativas.length} sub={`${db.empresas.length} cadastradas`}/>
       <KPI icon={DollarSign} label="DAS Total Apurado" value={fBRL(totalDas)} color={T.ok}/>
       <KPI icon={Calculator} label="Apurações" value={db.apuracoes.length} sub="finalizadas" color={T.i}/>
-      <KPI icon={AlertTriangle} label="Pendentes (03/2026)" value={pendentes.length} sub={pendentes.length > 0 ? "empresas sem apuração" : "tudo em dia"} color={pendentes.length > 0 ? T.w : T.ok}/>
+      <KPI icon={TriangleAlert} label="Pendentes (03/2026)" value={pendentes.length} sub={pendentes.length > 0 ? "empresas sem apuração" : "tudo em dia"} color={pendentes.length > 0 ? T.w : T.ok}/>
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
@@ -1114,7 +1114,7 @@ function DashboardPage({db, navigate, config}) {
         ))}
         {alertasRecentes.map((a, i) => (
           <div key={i} style={{padding:"8px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",gap:8,alignItems:"flex-start"}}>
-            <AlertTriangle size={11} style={{color:a.sev === "critico" ? T.err : a.sev === "aviso" ? T.w : T.i,flexShrink:0,marginTop:2}}/>
+            <TriangleAlert size={11} style={{color:a.sev === "critico" ? T.err : a.sev === "aviso" ? T.w : T.i,flexShrink:0,marginTop:2}}/>
             <div>
               <span style={{fontSize:"10px",color:T.tm}}>{a.emp} ({a.comp})</span>
               <p style={{fontSize:"11px",color:T.text,margin:"1px 0 0"}}>{a.msg}</p>
@@ -1251,7 +1251,7 @@ function EmpresasPage({db}){
           <td style={{padding:"10px 12px",fontSize:"11px",fontFamily:T.fm,color:T.tm}}>{e.abertura}</td>
           <td style={{padding:"10px 12px"}}><Badge color={e.ativa?"success":"danger"}>{e.ativa?"Ativa":"Inativa"}</Badge></td>
           <td style={{padding:"10px 12px"}}><div style={{display:"flex",gap:3}}>
-            <Btn v="ghost" sz="sm" icon={Edit3} onClick={()=>openEdit(e)}/>
+            <Btn v="ghost" sz="sm" icon={Pencil} onClick={()=>openEdit(e)}/>
             <Btn v="ghost" sz="sm" icon={e.ativa?Archive:RotateCcw} onClick={()=>db.togE(e.id)}/>
             <Btn v="danger" sz="sm" icon={Trash2} onClick={()=>db.delE(e.id)}/>
           </div></td>
