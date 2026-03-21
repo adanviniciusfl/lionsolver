@@ -25,11 +25,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Decode signing key
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String("${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}")
+          [System.IO.File]::WriteAllBytes("$env:RUNNER_TEMP\lionsolver.key", $bytes)
+
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PATH: ${{ runner.temp }}\lionsolver.key
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
