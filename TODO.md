@@ -2,17 +2,17 @@
 
 Este arquivo consolida os próximos passos e épicos de desenvolvimento alinhados para crescimento e otimização do software.
 
-- [ ] **Seção "Sobre" (Documentação Integrada)**
+- [x] **Seção "Sobre" (Documentação Integrada)**
   - Nova aba/tela com detalhes informativos sobre o app.
   - Implementar seção com tutoriais da operação.
   - Exibição visível dos dados do Changelog (versões lançadas, novidades e fixes por build).
 
-- [ ] **Relatório Excel mais Apresentável**
+- [x] **Relatório Excel mais Apresentável**
   - Upgrade da exportação tabulada base rudimentar existente (TSV/CSV inline).
   - Integração preferencial com a biblioteca web `SheetJS` injetando features como Auto-Fit width, headers estilizados, borders e multi-planilhas.
   - Preservar compliance e abster do uso do Tauri Plugin FS (usando a bridge web-compatible vigente do browser window para download da URI scheme do XLSX buildado).
 
-- [ ] **Dashboard com Filtro por Empresa**
+- [x] **Dashboard com Filtro por Empresa**
   - Implementar um seletor no `DashboardPage` possibilitando segmentação das estátisticas globais.
   - Dinamizar KPIs atuais (DAS Mensal plot e evolução arrecadatória) filtrando base em clientes ativos específicos para visualização de relatórios granulares do painel.
 
