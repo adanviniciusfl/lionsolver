@@ -45,26 +45,26 @@ const APP_VERSION = "1.6.0";
 
 const THEMES = {
   escuro: {
-    bg:"#0F1117",bgCard:"#181B25",bgHov:"#1E2230",bgSide:"#0A0C12",bgIn:"#141720",
-    border:"#252A36",borderF:"#D4A843",text:"#E8E6E1",tm:"#7A7F8E",td:"#4A4F5E",
-    p:"#D4A843",pH:"#E0B84F",pD:"rgba(212,168,67,0.15)",pText:"#0F1117",
-    ok:"#34D399",okD:"rgba(52,211,153,0.12)",
+    bg:"#131313",bgCard:"#1c1b1b",bgHov:"#2a2a2a",bgSide:"#0e0e0e",bgIn:"#201f1f",
+    border:"#2a2a2a",borderF:"#bbc3ff",text:"#e5e2e1",tm:"#8e90a2",td:"#434656",
+    p:"#bbc3ff",pH:"#dee0ff",pD:"rgba(187, 195, 255, 0.12)",pText:"#001d93",
+    ok:"#00daf3",okD:"rgba(0, 218, 243, 0.12)",
     w:"#FBBF24",wD:"rgba(251,191,36,0.12)",
-    err:"#F87171",errD:"rgba(248,113,113,0.12)",
-    i:"#60A5FA",iD:"rgba(96,165,250,0.12)",
-    r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
-    sideText:"#E8E6E1",sideTm:"#7A7F8E",sideTd:"#4A4F5E",sideBorder:"#252A36",
+    err:"#ffb4ab",errD:"rgba(255, 180, 171, 0.12)",
+    i:"#bbc3ff",iD:"rgba(187, 195, 255, 0.12)",
+    r:"16px",rs:"8px",f:"'Manrope','Inter',sans-serif",fm:"'Inter',monospace",
+    sideText:"#e5e2e1",sideTm:"#8e90a2",sideTd:"#434656",sideBorder:"rgba(255,255,255,0.05)",
   },
   claro: {
     bg:"#F0F1F5",bgCard:"#FFFFFF",bgHov:"#E8E9EE",bgSide:"#1B2332",bgIn:"#F5F6FA",
-    border:"#D8DAE2",borderF:"#B8922E",text:"#1A1D26",tm:"#5A5F70",td:"#9096A6",
-    p:"#B8922E",pH:"#A07D20",pD:"rgba(184,146,46,0.12)",pText:"#FFFFFF",
-    ok:"#0F9960",okD:"rgba(15,153,96,0.10)",
+    border:"#D8DAE2",borderF:"#001d93",text:"#1A1D26",tm:"#5A5F70",td:"#9096A6",
+    p:"#002ccd",pH:"#001d93",pD:"rgba(0, 44, 205, 0.12)",pText:"#FFFFFF",
+    ok:"#007886",okD:"rgba(0, 120, 134, 0.10)",
     w:"#D97706",wD:"rgba(217,119,6,0.10)",
     err:"#DC2626",errD:"rgba(220,38,38,0.08)",
-    i:"#2563EB",iD:"rgba(37,99,235,0.08)",
-    r:"10px",rs:"6px",f:"'DM Sans','Segoe UI',sans-serif",fm:"'JetBrains Mono',monospace",
-    sideText:"#E8E6E1",sideTm:"#7A7F8E",sideTd:"#4A4F5E",sideBorder:"#252A36",
+    i:"#2848ee",iD:"rgba(40, 72, 238, 0.08)",
+    r:"16px",rs:"8px",f:"'Manrope','Inter',sans-serif",fm:"'Inter',monospace",
+    sideText:"#e5e2e1",sideTm:"#7A7F8E",sideTd:"#4A4F5E",sideBorder:"#252A36",
   },
 };
 
@@ -468,11 +468,13 @@ function ReportModal({ report, onClose }) {
    UI COMPONENTS
    ══════════════════════════════════════════════════════════════ */
 function Badge({children,color="primary"}){const c={primary:{bg:T.pD,t:T.p},success:{bg:T.okD,t:T.ok},warning:{bg:T.wD,t:T.w},danger:{bg:T.errD,t:T.err},info:{bg:T.iD,t:T.i}}[color]||{bg:T.pD,t:T.p};return <span style={{display:"inline-flex",padding:"2px 9px",borderRadius:"14px",fontSize:"10px",fontWeight:600,background:c.bg,color:c.t,textTransform:"uppercase",letterSpacing:"0.03em"}}>{children}</span>;}
-function Btn({children,v="primary",sz="md",icon:I,onClick,disabled,style:s}){const[h,sH]=useState(false);const base={display:"inline-flex",alignItems:"center",gap:6,border:"none",cursor:disabled?"not-allowed":"pointer",fontFamily:T.f,fontWeight:600,borderRadius:T.rs,transition:"all 0.2s",opacity:disabled?0.5:1};const szs={sm:{padding:"5px 11px",fontSize:"11px"},md:{padding:"8px 16px",fontSize:"12px"},lg:{padding:"11px 22px",fontSize:"13px"}};const vs={primary:{background:h?T.pH:T.p,color:T.pText||"#fff"},ghost:{background:h?"rgba(128,128,128,0.12)":"transparent",color:T.tm},danger:{background:h?"rgba(248,113,113,0.2)":T.errD,color:T.err}};return <button onClick={onClick} disabled={disabled} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} style={{...base,...szs[sz],...vs[v],...s}}>{I&&<I size={sz==="sm"?12:14}/>}{children}</button>;}
+function Btn({children,v="primary",sz="md",icon:I,onClick,disabled,style:s}){const[h,sH]=useState(false);const base={display:"inline-flex",alignItems:"center",gap:6,border:"none",cursor:disabled?"not-allowed":"pointer",fontFamily:T.f,fontWeight:600,borderRadius:T.rs,transition:"all 0.22s cubic-bezier(0.16,1,0.3,1)",opacity:disabled?0.5:1,letterSpacing:"0.01em"};const szs={sm:{padding:"5px 12px",fontSize:"11px"},md:{padding:"9px 18px",fontSize:"12px"},lg:{padding:"12px 24px",fontSize:"13px"}};const vs={primary:{background:h?T.pH:T.p,color:T.pText||"#131313",boxShadow:h?`0 0 24px ${T.p}44,0 4px 12px ${T.p}22`:"none",transform:h?"translateY(-1px)":"none"},ghost:{background:h?"rgba(187,195,255,0.08)":"transparent",color:h?T.text:T.tm,border:"1px solid rgba(255,255,255,0.06)"},danger:{background:h?"rgba(255,180,171,0.18)":T.errD,color:T.err,border:`1px solid ${T.errD}`}};return <button onClick={onClick} disabled={disabled} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} style={{...base,...szs[sz],...vs[v],...s}}>{I&&<I size={sz==="sm"?12:14}/>}{children}</button>;}
 function Inp({label,value,onChange,placeholder,mono,error,required,style:s,prefix,type="text"}){const[f,sF]=useState(false);return <div style={{display:"flex",flexDirection:"column",gap:4,...s}}>{label&&<label style={{fontSize:"10px",fontWeight:700,color:T.tm,letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}{required&&<span style={{color:T.err}}>*</span>}</label>}<div style={{position:"relative"}}>{prefix&&<span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:T.td,fontSize:"12px"}}>{prefix}</span>}<input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} onFocus={()=>sF(true)} onBlur={()=>sF(false)} style={{padding:prefix?"9px 12px 9px 28px":"9px 12px",background:T.bgIn,border:`1px solid ${error?T.err:f?T.borderF:T.border}`,borderRadius:T.rs,color:T.text,fontSize:"13px",fontFamily:mono?T.fm:T.f,outline:"none",width:"100%",boxSizing:"border-box"}}/></div>{error&&<span style={{fontSize:"10px",color:T.err}}>{error}</span>}</div>;}
 function Sel({label,value,onChange,options,required,style:s}){return <div style={{display:"flex",flexDirection:"column",gap:4,...s}}>{label&&<label style={{fontSize:"10px",fontWeight:700,color:T.tm,letterSpacing:"0.05em",textTransform:"uppercase"}}>{label}{required&&<span style={{color:T.err}}>*</span>}</label>}<select value={value} onChange={e=>onChange(e.target.value)} style={{padding:"9px 12px",background:T.bgIn,border:`1px solid ${T.border}`,borderRadius:T.rs,color:T.text,fontSize:"13px",fontFamily:T.f,outline:"none",cursor:"pointer",appearance:"none",width:"100%",boxSizing:"border-box"}}>{options.map(o=>typeof o==="string"?<option key={o} value={o}>{o}</option>:<option key={o.v} value={o.v}>{o.l}</option>)}</select></div>;}
 function Modal({open,onClose,title,children,width=560}){if(!open)return null;return <div style={{position:"fixed",inset:0,zIndex:1e3,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.6)"}} onClick={onClose}><div onClick={e=>e.stopPropagation()} style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,width,maxWidth:"92vw",maxHeight:"88vh",overflow:"auto",boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",borderBottom:`1px solid ${T.border}`}}><h3 style={{margin:0,fontSize:"15px",fontWeight:700,color:T.text}}>{title}</h3><button onClick={onClose} style={{background:"none",border:"none",color:T.tm,cursor:"pointer"}}><X size={16}/></button></div><div style={{padding:20}}>{children}</div></div></div>;}
-function KPI({icon:I,label,value,sub,color=T.p}){return <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"16px 18px",flex:1,minWidth:160}}><div style={{display:"flex",justifyContent:"space-between"}}><div><p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</p><p style={{margin:"4px 0 0",fontSize:"22px",fontWeight:800,color:T.text}}>{value}</p>{sub&&<p style={{margin:"2px 0 0",fontSize:"10px",color:T.tm}}>{sub}</p>}</div><div style={{width:34,height:34,borderRadius:"8px",background:`${color}18`,display:"flex",alignItems:"center",justifyContent:"center"}}><I size={16} style={{color}}/></div></div></div>;}
+function KPI({icon:I,label,value,sub,color=T.p}){return <div className="kpi-glass" style={{borderRadius:T.r,padding:"18px 20px",flex:1,minWidth:160}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div style={{flex:1}}><p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em",fontFamily:T.f}}>{label}</p><p style={{margin:"6px 0 0",fontSize:"24px",fontWeight:800,color:T.text,fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.02em",lineHeight:1}}>{value}</p>{sub&&<p style={{margin:"4px 0 0",fontSize:"10px",color:T.tm,fontWeight:500}}>{sub}</p>}</div><div style={{width:38,height:38,borderRadius:"10px",background:`${color}18`,border:`1px solid ${color}30`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 0 16px ${color}22`}}><I size={17} style={{color}}/></div></div></div>;}
+
+function Toggle({options,value,onChange,style:s}){return <div style={{display:"inline-flex",background:"rgba(255,255,255,0.03)",borderRadius:"100px",padding:4,gap:3,border:"1px solid rgba(255,255,255,0.07)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.04)",...s}}>{options.map(opt=>{const active=value===opt.v;return <button key={opt.v} onClick={()=>onChange(opt.v)} style={{padding:"7px 20px",borderRadius:"100px",border:"none",cursor:"pointer",fontSize:"12px",fontWeight:active?700:500,fontFamily:T.f,background:active?T.p:"transparent",color:active?"#131313":T.tm,transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",letterSpacing:"0.01em",boxShadow:active?`0 2px 14px ${T.p}50,inset 0 1px 0 rgba(255,255,255,0.2)`:"none"}}>{opt.l}</button>;})}</div>;}
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -774,18 +776,18 @@ function ApuracaoPage({db,navigate}){
   const steps=["Empresa e Receitas","RBT12 e FS12","Resultado"];
 
   return <div>
-    <h1 style={{fontSize:"24px",fontWeight:800,color:T.text,margin:"0 0 6px"}}>Nova Apuração</h1>
-    <p style={{color:T.tm,fontSize:"13px",margin:"0 0 20px"}}>Apuração mensal com subseções de receita e deduções integradas</p>
+    <h1 style={{fontSize:"28px",fontWeight:800,color:T.text,margin:"0 0 5px",fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.03em",lineHeight:1.15}}>Nova Apuração</h1>
+    <p style={{color:T.tm,fontSize:"13px",margin:"0 0 24px",fontWeight:500}}>Apuração mensal com subseções de receita e deduções integradas</p>
 
     {/* Stepper */}
-    <div style={{display:"flex",gap:4,marginBottom:24}}>
-      {steps.map((t,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-        <div style={{width:"100%",height:3,borderRadius:2,background:i<=step?T.p:T.border,transition:"all 0.3s"}}/>
-        <span style={{fontSize:"10px",fontWeight:i===step?700:500,color:i<=step?T.p:T.td}}>{t}</span>
+    <div style={{display:"flex",gap:6,marginBottom:28}}>
+      {steps.map((t,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+        <div className="stepper-bar" style={{width:"100%",height:3,borderRadius:2,background:i<step?`linear-gradient(90deg,${T.p},${T.ok})`:i===step?T.p:"rgba(255,255,255,0.08)",boxShadow:i<=step?`0 0 8px ${T.p}44`:undefined}}/>
+        <span style={{fontSize:"10px",fontWeight:i===step?700:500,color:i<step?T.ok:i===step?T.p:T.td,transition:"color 0.3s",letterSpacing:"0.03em"}}>{t}</span>
       </div>)}
     </div>
 
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:24}}>
+    <div className="card-glass" style={{borderRadius:T.r,padding:24}}>
 
       {/* ═══ STEP 0: Empresa + Receitas ═══ */}
       {step===0&&<div>
@@ -840,9 +842,16 @@ function ApuracaoPage({db,navigate}){
 
       {/* ═══ STEP 1: RBT12 + FS12 ═══ */}
       {step===1&&<div>
-        <div style={{display:"flex",gap:8,marginBottom:16}}>
-          <Btn v={modoRBT==="simples"?"primary":"ghost"} sz="sm" onClick={()=>setModoRBT("simples")}>Simplificado</Btn>
-          <Btn v={modoRBT==="detalhado"?"primary":"ghost"} sz="sm" onClick={()=>{setModoRBT("detalhado");setTimeout(()=>preencherDoHistorico(),50);}}>Detalhado (mês a mês)</Btn>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20,flexWrap:"wrap",gap:12}}>
+          <div>
+            <h3 style={{fontSize:"15px",fontWeight:700,color:T.text,margin:"0 0 3px"}}>RBT12 e Folha de Salários (FS12)</h3>
+            <p style={{fontSize:"12px",color:T.tm,margin:0}}>Receita bruta acumulada dos 12 meses anteriores à competência</p>
+          </div>
+          <Toggle
+            options={[{v:"simples",l:"Simplificado"},{v:"detalhado",l:"Detalhado — 12 meses"}]}
+            value={modoRBT}
+            onChange={v=>{setModoRBT(v);if(v==="detalhado")setTimeout(()=>preencherDoHistorico(),50);}}
+          />
         </div>
 
         {modoRBT==="simples"?<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
@@ -857,21 +866,22 @@ function ApuracaoPage({db,navigate}){
             </div>
             <Btn v="ghost" sz="sm" icon={History} onClick={() => { const n = preencherDoHistorico(); alert(n > 0 ? `${n} meses preenchidos do histórico de apurações.` : "Nenhuma apuração anterior encontrada para esta empresa."); }}>Puxar do Histórico</Btn>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
             {getMeses().map((m,i) => {
               const disabled = isMesAnteriorAbertura(m);
-              return <div key={m} style={{display:"flex",flexDirection:"column",gap:2,opacity:disabled?0.35:1}}>
-              <span style={{fontSize:"10px",fontFamily:T.fm,color:disabled?T.td:T.tm}}>{m}{disabled?" ✕":""}</span>
-              <div style={{display:"flex",gap:4}}>
-                <input value={disabled?"":rbt12Meses[i]} onChange={e=>{if(disabled)return;const a=[...rbt12Meses];a[i]=e.target.value;setRbt12Meses(a);}} placeholder={disabled?"—":"Receita"} disabled={disabled} style={{flex:1,padding:"6px 8px",background:disabled?"transparent":T.bgIn,border:`1px solid ${disabled?"transparent":T.border}`,borderRadius:T.rs,color:disabled?T.td:T.text,fontSize:"11px",fontFamily:T.fm,outline:"none",width:"100%",boxSizing:"border-box",cursor:disabled?"not-allowed":"text"}}/>
-                <input value={disabled?"":fs12Meses[i]} onChange={e=>{if(disabled)return;const a=[...fs12Meses];a[i]=e.target.value;setFs12Meses(a);}} placeholder={disabled?"—":"Folha"} disabled={disabled} style={{flex:1,padding:"6px 8px",background:disabled?"transparent":T.bgIn,border:`1px solid ${disabled?"transparent":T.border}`,borderRadius:T.rs,color:disabled?T.td:T.text,fontSize:"11px",fontFamily:T.fm,outline:"none",width:"100%",boxSizing:"border-box",cursor:disabled?"not-allowed":"text"}}/>
-              </div>
+              const [yy,mm] = m.split("-");
+              const monthNames = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+              const mlabel = `${monthNames[parseInt(mm)-1]} ${yy}`;
+              return <div key={m} className={`month-cell${disabled?" month-disabled":""}`}>
+              <span className="month-cell-label">{mlabel}{disabled&&<span style={{marginLeft:4,color:T.err,fontSize:"9px"}}>✕</span>}</span>
+              <input className="month-cell-input" value={disabled?"":rbt12Meses[i]} onChange={e=>{if(disabled)return;const a=[...rbt12Meses];a[i]=e.target.value;setRbt12Meses(a);}} placeholder={disabled?"—":"Receita R$"} disabled={disabled}/>
+              <input className="month-cell-input" value={disabled?"":fs12Meses[i]} onChange={e=>{if(disabled)return;const a=[...fs12Meses];a[i]=e.target.value;setFs12Meses(a);}} placeholder={disabled?"—":"Folha R$"} disabled={disabled}/>
             </div>;})}
           </div>
-          <div style={{display:"flex",gap:20,marginTop:12,padding:"10px 14px",background:T.pD,borderRadius:T.rs,flexWrap:"wrap"}}>
-            <span style={{fontSize:"12px",color:T.tm}}>RBT12: <strong style={{color:T.text,fontFamily:T.fm}}>{fBRL(rbt12Meses.reduce((s,v)=>s+pM(v),0))}</strong></span>
-            <span style={{fontSize:"12px",color:T.tm}}>FS12: <strong style={{color:T.text,fontFamily:T.fm}}>{fBRL(fs12Meses.reduce((s,v)=>s+pM(v),0))}</strong></span>
-            <span style={{fontSize:"12px",color:T.tm}}>Meses ativos: <strong style={{color:T.i}}>{getMesesAtivos()}</strong></span>
+          <div style={{display:"flex",gap:24,marginTop:14,padding:"12px 16px",background:"linear-gradient(135deg,rgba(187,195,255,0.07),rgba(0,218,243,0.05))",borderRadius:T.rs,border:"1px solid rgba(255,255,255,0.07)",flexWrap:"wrap",alignItems:"center"}}>
+            <span style={{fontSize:"12px",color:T.tm}}>RBT12: <strong style={{color:T.p,fontFamily:T.fm,fontSize:"13px"}}>{fBRL(rbt12Meses.reduce((s,v)=>s+pM(v),0))}</strong></span>
+            <span style={{fontSize:"12px",color:T.tm}}>FS12: <strong style={{color:T.text,fontFamily:T.fm,fontSize:"13px"}}>{fBRL(fs12Meses.reduce((s,v)=>s+pM(v),0))}</strong></span>
+            <span style={{fontSize:"12px",color:T.tm}}>Meses ativos: <strong style={{color:T.i,fontFamily:T.fm}}>{getMesesAtivos()}</strong></span>
           </div>
         </div>}
 
@@ -988,14 +998,14 @@ function ApuracaoPage({db,navigate}){
         </>}
 
         {/* Resumo final */}
-        <div style={{marginTop:16,padding:"14px 18px",background:`linear-gradient(135deg,${T.pD},${T.okD})`,borderRadius:T.r,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{marginTop:20,padding:"18px 22px",background:"linear-gradient(135deg,rgba(187,195,255,0.08),rgba(0,218,243,0.06))",borderRadius:T.r,border:"1px solid rgba(255,255,255,0.08)",display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:"inset 0 1px 0 rgba(255,255,255,0.06)"}}>
           <div>
-            <p style={{margin:0,fontSize:"11px",color:T.tm,fontWeight:600,textTransform:"uppercase"}}>Total bruto</p>
-            <p style={{margin:"2px 0",fontSize:"15px",fontFamily:T.fm,color:T.text}}>{fBRL(resultado.totalBruto)}</p>
+            <p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em"}}>Total bruto</p>
+            <p style={{margin:"4px 0 0",fontSize:"16px",fontFamily:T.fm,color:T.text,fontWeight:600}}>{fBRL(resultado.totalBruto)}</p>
           </div>
           <div style={{textAlign:"right"}}>
-            <p style={{margin:0,fontSize:"11px",color:T.tm,fontWeight:600,textTransform:"uppercase"}}>DAS a recolher</p>
-            <p style={{margin:"2px 0 0",fontSize:"26px",fontWeight:800,fontFamily:T.fm,color:T.ok}}>{fBRL(resultado.valorDAS)}</p>
+            <p style={{margin:0,fontSize:"10px",color:T.tm,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.07em"}}>DAS a recolher</p>
+            <p className="das-value" style={{margin:"4px 0 0",fontSize:"30px",fontWeight:800,fontFamily:T.fm,letterSpacing:"-0.02em"}}>{fBRL(resultado.valorDAS)}</p>
           </div>
         </div>
 
@@ -1045,19 +1055,19 @@ function DashboardPage({db, navigate, config}) {
   const alertasRecentes = apuracoesFiltradas.flatMap(a => (a.alertas || []).map(al => ({...al, emp: a.empresa_nome, comp: a.competencia}))).slice(0, 4);
 
   return <div>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
       <div>
-        <h1 style={{fontSize:"24px",fontWeight:800,color:T.text,margin:"0 0 4px"}}>Dashboard</h1>
-        <p style={{color:T.tm,fontSize:"13px",margin:0}}>{config.escritorio || "LionSolver"} — Março 2026</p>
+        <h1 style={{fontSize:"28px",fontWeight:800,color:T.text,margin:"0 0 4px",fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.03em",lineHeight:1.15}}>Dashboard</h1>
+        <p style={{color:T.tm,fontSize:"13px",margin:0,fontWeight:500}}>{config.escritorio || "LionSolver"} <span style={{color:T.td,margin:"0 4px"}}>·</span> Março 2026</p>
       </div>
       <div style={{display:"flex",gap:10,alignItems:"center"}}>
-        <Sel value={empresaFiltro} onChange={setEmpresaFiltro} options={[{v:"todas",l:"Todas as empresas"},...ativas.map(e => ({v:e.id,l:e.fantasia||e.razao}))]} style={{minWidth:180}}/>
+        <Sel value={empresaFiltro} onChange={setEmpresaFiltro} options={[{v:"todas",l:"Todas as empresas"},...ativas.map(e => ({v:e.id,l:e.fantasia||e.razao}))]} style={{minWidth:190}}/>
         <Btn icon={ChevronRight} onClick={() => navigate("apuracao")}>Nova Apuração</Btn>
       </div>
     </div>
 
     {/* KPIs */}
-    <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:20}}>
+    <div style={{display:"flex",gap:14,flexWrap:"wrap",marginBottom:22}}>
       <KPI icon={Building2} label="Empresas Ativas" value={ativasFiltradas.length} sub={`${db.empresas.length} cadastradas`}/>
       <KPI icon={DollarSign} label="DAS Total Apurado" value={fBRL(totalDas)} color={T.ok}/>
       <KPI icon={Calculator} label="Apurações" value={apuracoesFiltradas.length} sub="finalizadas" color={T.i}/>
@@ -1066,35 +1076,35 @@ function DashboardPage({db, navigate, config}) {
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
       {/* DAS mensal chart */}
-      <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"16px 20px"}}>
-        <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"0 0 14px",letterSpacing:"0.04em"}}>DAS Mensal</h3>
-        {mesesChart.length === 0 ? <p style={{fontSize:"12px",color:T.td,textAlign:"center",padding:20}}>Nenhuma apuração ainda</p> :
-        <div style={{display:"flex",alignItems:"flex-end",gap:8,height:120}}>
+      <div className="card-glass" style={{borderRadius:T.r,padding:"20px 24px"}}>
+        <h3 className="section-label" style={{color:T.tm,margin:"0 0 18px"}}>DAS Mensal</h3>
+        {mesesChart.length === 0 ? <p style={{fontSize:"12px",color:T.td,textAlign:"center",padding:"24px 0"}}>Nenhuma apuração ainda</p> :
+        <div style={{display:"flex",alignItems:"flex-end",gap:10,height:130}}>
           {mesesChart.map(m => {
             const h = (dasPorMes[m] / maxDas) * 100;
             const label = m.split("-").reverse().join("/");
-            return <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-              <span style={{fontSize:"9px",fontFamily:T.fm,color:T.tm}}>{fBRL(dasPorMes[m])}</span>
-              <div style={{width:"100%",height:`${h}%`,minHeight:4,background:`linear-gradient(180deg, ${T.p}, ${T.p}66)`,borderRadius:"4px 4px 2px 2px"}}/>
-              <span style={{fontSize:"9px",color:T.td}}>{label}</span>
+            return <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+              <span style={{fontSize:"9px",fontFamily:T.fm,color:T.tm,textAlign:"center"}}>{fBRL(dasPorMes[m])}</span>
+              <div className="chart-bar" style={{width:"100%",height:`${h}%`,minHeight:5,background:`linear-gradient(180deg,${T.p},${T.p}55)`,borderRadius:"5px 5px 3px 3px",boxShadow:`0 0 14px ${T.p}40`}}/>
+              <span style={{fontSize:"9px",color:T.td,fontFamily:T.fm}}>{label}</span>
             </div>;
           })}
         </div>}
       </div>
 
       {/* DAS por empresa */}
-      <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"16px 20px"}}>
-        <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"0 0 14px",letterSpacing:"0.04em"}}>DAS por Empresa</h3>
-        {empChart.length === 0 ? <p style={{fontSize:"12px",color:T.td,textAlign:"center",padding:20}}>Nenhuma apuração ainda</p> :
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      <div className="card-glass" style={{borderRadius:T.r,padding:"20px 24px"}}>
+        <h3 className="section-label" style={{color:T.tm,margin:"0 0 18px"}}>DAS por Empresa</h3>
+        {empChart.length === 0 ? <p style={{fontSize:"12px",color:T.td,textAlign:"center",padding:"24px 0"}}>Nenhuma apuração ainda</p> :
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {empChart.map(([nome, val]) => (
             <div key={nome}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                <span style={{fontSize:"11px",color:T.text,fontWeight:600}}>{nome}</span>
-                <span style={{fontSize:"11px",fontFamily:T.fm,color:T.tm}}>{fBRL(val)}</span>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                <span style={{fontSize:"12px",color:T.text,fontWeight:600,fontFamily:"'Manrope',sans-serif"}}>{nome}</span>
+                <span style={{fontSize:"12px",fontFamily:T.fm,color:T.ok,fontWeight:700}}>{fBRL(val)}</span>
               </div>
-              <div style={{width:"100%",height:6,background:T.border,borderRadius:3}}>
-                <div style={{width:`${(val/maxEmpDas)*100}%`,height:"100%",background:T.ok,borderRadius:3}}/>
+              <div style={{width:"100%",height:5,background:"rgba(255,255,255,0.06)",borderRadius:3}}>
+                <div style={{width:`${(val/maxEmpDas)*100}%`,height:"100%",background:`linear-gradient(90deg,${T.ok},${T.ok}88)`,borderRadius:3,boxShadow:`0 0 8px ${T.ok}40`}}/>
               </div>
             </div>
           ))}
@@ -1104,27 +1114,27 @@ function DashboardPage({db, navigate, config}) {
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
       {/* Apurações recentes */}
-      <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,overflow:"hidden"}}>
-        <div style={{padding:"12px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:0}}>Apurações Recentes</h3>
+      <div className="card-glass" style={{borderRadius:T.r,overflow:"hidden"}}>
+        <div style={{padding:"14px 20px",borderBottom:`1px solid rgba(255,255,255,0.05)`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <h3 className="section-label" style={{color:T.tm,margin:0}}>Apurações Recentes</h3>
           <Btn v="ghost" sz="sm" onClick={() => navigate("historico")}>Ver todas</Btn>
         </div>
-        {recentes.length === 0 ? <p style={{fontSize:"12px",color:T.td,textAlign:"center",padding:20}}>Nenhuma</p> :
+        {recentes.length === 0 ? <p style={{fontSize:"12px",color:T.td,textAlign:"center",padding:24}}>Nenhuma</p> :
         recentes.map((a, i) => (
-          <div key={a.id} style={{padding:"10px 16px",borderBottom:i < recentes.length - 1 ? `1px solid ${T.border}` : "none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div key={a.id} className="hover-row" style={{padding:"11px 20px",borderBottom:i < recentes.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
-              <p style={{margin:0,fontSize:"12px",fontWeight:600,color:T.text}}>{a.empresa_nome}</p>
-              <p style={{margin:"1px 0 0",fontSize:"10px",color:T.tm}}>{a.competencia.split("-").reverse().join("/")}</p>
+              <p style={{margin:0,fontSize:"12px",fontWeight:700,color:T.text,fontFamily:"'Manrope',sans-serif"}}>{a.empresa_nome}</p>
+              <p style={{margin:"2px 0 0",fontSize:"10px",color:T.tm,fontFamily:T.fm}}>{a.competencia.split("-").reverse().join("/")}</p>
             </div>
-            <span style={{fontSize:"13px",fontWeight:700,fontFamily:T.fm,color:T.ok}}>{fBRL(a.valorDAS)}</span>
+            <span style={{fontSize:"14px",fontWeight:800,fontFamily:T.fm,color:T.ok,letterSpacing:"-0.01em"}}>{fBRL(a.valorDAS)}</span>
           </div>
         ))}
       </div>
 
       {/* Pendentes + Alertas */}
-      <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,overflow:"hidden"}}>
-        <div style={{padding:"12px 16px",borderBottom:`1px solid ${T.border}`}}>
-          <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:0}}>Pendentes e Alertas</h3>
+      <div className="card-glass" style={{borderRadius:T.r,overflow:"hidden"}}>
+        <div style={{padding:"14px 20px",borderBottom:`1px solid rgba(255,255,255,0.05)`}}>
+          <h3 className="section-label" style={{color:T.tm,margin:0}}>Pendentes e Alertas</h3>
         </div>
         {pendentes.length > 0 && pendentes.slice(0, 3).map(e => (
           <div key={e.id} style={{padding:"8px 16px",borderBottom:`1px solid ${T.border}`,display:"flex",gap:8,alignItems:"center"}}>
@@ -1184,12 +1194,12 @@ function ConfigPage({config, setConfig, db}) {
   };
 
   return <div>
-    <h1 style={{fontSize:"24px",fontWeight:800,color:T.text,margin:"0 0 6px"}}>Configurações</h1>
-    <p style={{color:T.tm,fontSize:"13px",margin:"0 0 24px"}}>Dados do escritório, preferências e backup</p>
+    <h1 style={{fontSize:"28px",fontWeight:800,color:T.text,margin:"0 0 5px",fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.03em",lineHeight:1.15}}>Configurações</h1>
+    <p style={{color:T.tm,fontSize:"13px",margin:"0 0 24px",fontWeight:500}}>Dados do escritório, preferências e backup</p>
 
     {/* Dados do escritório */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
-      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"0 0 14px",letterSpacing:"0.04em"}}>Dados do Escritório</h3>
+    <div className="card-glass" style={{borderRadius:T.r,padding:22,marginBottom:16}}>
+      <h3 className="section-label" style={{color:T.tm,margin:"0 0 16px"}}>Dados do Escritório</h3>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
         <Inp label="Nome do Escritório" value={config.escritorio} onChange={v => setConfig(c => ({...c, escritorio: v}))} placeholder="Ex: Meu Escritório Contábil" style={{gridColumn:"span 2"}}/>
         <Inp label="Contador Responsável" value={config.contador} onChange={v => setConfig(c => ({...c, contador: v}))} placeholder="Nome completo"/>
@@ -1198,8 +1208,8 @@ function ConfigPage({config, setConfig, db}) {
     </div>
 
     {/* Dados padrão */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
-      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"0 0 14px",letterSpacing:"0.04em"}}>Dados Padrão para Novas Empresas</h3>
+    <div className="card-glass" style={{borderRadius:T.r,padding:22,marginBottom:16}}>
+      <h3 className="section-label" style={{color:T.tm,margin:"0 0 16px"}}>Dados Padrão para Novas Empresas</h3>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}}>
         <Sel label="UF Padrão" value={config.ufPadrao} onChange={v => setConfig(c => ({...c, ufPadrao: v}))} options={UFS.map(u => ({v: u, l: u}))}/>
         <Sel label="Cidade Padrão" value={config.cidadePadrao} onChange={v => setConfig(c => ({...c, cidadePadrao: v}))} options={[{v:"",l:"Selecione..."},...(MUNICIPIOS_POR_UF[config.ufPadrao] || []).map(c => ({v: c, l: c}))]}/>
@@ -1208,8 +1218,8 @@ function ConfigPage({config, setConfig, db}) {
     </div>
 
     {/* Tema */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
-      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"0 0 14px",letterSpacing:"0.04em"}}>Aparência</h3>
+    <div className="card-glass" style={{borderRadius:T.r,padding:22,marginBottom:16}}>
+      <h3 className="section-label" style={{color:T.tm,margin:"0 0 16px"}}>Aparência</h3>
       <div style={{display:"flex",gap:10}}>
         <Btn v={config.tema === "escuro" ? "primary" : "ghost"} sz="sm" onClick={() => setConfig(c => ({...c, tema: "escuro"}))}>Tema Escuro</Btn>
         <Btn v={config.tema === "claro" ? "primary" : "ghost"} sz="sm" onClick={() => setConfig(c => ({...c, tema: "claro"}))}>Tema Claro</Btn>
@@ -1218,8 +1228,8 @@ function ConfigPage({config, setConfig, db}) {
     </div>
 
     {/* Backup */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20}}>
-      <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",margin:"0 0 14px",letterSpacing:"0.04em"}}>Backup e Restauração</h3>
+    <div className="card-glass" style={{borderRadius:T.r,padding:22}}>
+      <h3 className="section-label" style={{color:T.tm,margin:"0 0 16px"}}>Backup e Restauração</h3>
       <p style={{fontSize:"12px",color:T.tm,margin:"0 0 14px"}}>Exporte todos os dados (empresas, apurações, configurações) em arquivo JSON. Importe para restaurar.</p>
       <div style={{display:"flex",gap:10}}>
         <Btn v="ghost" icon={Download} onClick={exportBackup}>Exportar Backup (JSON)</Btn>
@@ -1251,20 +1261,23 @@ function EmpresasPage({db}){
   const save=()=>{const d={...form,sublimite:Number(form.sublimite),anexo:(form.anexos||["I"])[0]};editing?db.updE(editing,d):db.addE(d);setModal(false);};
 
   return <div>
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:20}}>
-      <div><h1 style={{fontSize:"24px",fontWeight:800,color:T.text,margin:0}}>Empresas</h1><p style={{color:T.tm,fontSize:"13px",margin:"4px 0 0"}}>{db.empresas.filter(e=>e.ativa).length} ativas</p></div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+      <div>
+        <h1 style={{fontSize:"28px",fontWeight:800,color:T.text,margin:"0 0 4px",fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.03em",lineHeight:1.15}}>Empresas</h1>
+        <p style={{color:T.tm,fontSize:"13px",margin:0,fontWeight:500}}>{db.empresas.filter(e=>e.ativa).length} ativas <span style={{color:T.td}}>·</span> {db.empresas.length} total</p>
+      </div>
       <Btn icon={Plus} onClick={openNew}>Nova Empresa</Btn>
     </div>
-    <div style={{position:"relative",maxWidth:320,marginBottom:16}}>
-      <Search size={14} style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:T.td}}/>
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar..." style={{width:"100%",padding:"9px 12px 9px 32px",background:T.bgIn,border:`1px solid ${T.border}`,borderRadius:T.rs,color:T.text,fontSize:"12px",fontFamily:T.f,outline:"none",boxSizing:"border-box"}}/>
+    <div style={{position:"relative",maxWidth:340,marginBottom:18}}>
+      <Search size={14} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:T.td}}/>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nome, CNPJ..." className="inp-focus-glow" style={{width:"100%",padding:"10px 14px 10px 34px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:T.rs,color:T.text,fontSize:"13px",fontFamily:T.f,outline:"none",boxSizing:"border-box",backdropFilter:"blur(8px)"}}/>
     </div>
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,overflow:"hidden"}}>
+    <div className="card-glass" style={{borderRadius:T.r,overflow:"hidden"}}>
       <table style={{width:"100%",borderCollapse:"collapse"}}>
         <thead><tr style={{borderBottom:`1px solid ${T.border}`}}>
           {["CNPJ","Empresa","UF/Cidade","Anexo","Abertura","Status",""].map(h=><th key={h} style={{padding:"10px 12px",fontSize:"9px",fontWeight:700,color:T.td,textTransform:"uppercase",textAlign:"left"}}>{h}</th>)}
         </tr></thead>
-        <tbody>{filtered.map(e=><tr key={e.id} style={{borderBottom:`1px solid ${T.border}`}} onMouseEnter={ev=>ev.currentTarget.style.background=T.bgHov} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>
+        <tbody>{filtered.map(e=><tr key={e.id} className="hover-row" style={{borderBottom:`1px solid ${T.border}`}}>
           <td style={{padding:"10px 12px",fontFamily:T.fm,fontSize:"11px",color:T.text}}>{e.cnpj}</td>
           <td style={{padding:"10px 12px",fontSize:"12px",fontWeight:600,color:T.text}}>{e.fantasia||e.razao}</td>
           <td style={{padding:"10px 12px",fontSize:"11px",color:T.tm}}>{e.cidade}/{e.uf}</td>
@@ -1316,10 +1329,10 @@ function EmpresasPage({db}){
 function HistoricoPage({db}){
   const sorted=[...db.apuracoes].sort((a,b)=>b.created_at.localeCompare(a.created_at));
   return <div>
-    <h1 style={{fontSize:"24px",fontWeight:800,color:T.text,margin:"0 0 6px"}}>Histórico</h1>
-    <p style={{color:T.tm,fontSize:"13px",margin:"0 0 20px"}}>{db.apuracoes.length} apurações</p>
+    <h1 style={{fontSize:"28px",fontWeight:800,color:T.text,margin:"0 0 5px",fontFamily:"'Manrope',sans-serif",letterSpacing:"-0.03em",lineHeight:1.15}}>Histórico</h1>
+    <p style={{color:T.tm,fontSize:"13px",margin:"0 0 22px",fontWeight:500}}>{db.apuracoes.length} apurações finalizadas</p>
     {sorted.length===0?<div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:"50px 20px",textAlign:"center"}}><History size={36} style={{color:T.td,marginBottom:10}}/><p style={{fontSize:"13px",color:T.tm}}>Nenhuma apuração ainda</p></div>:
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,overflow:"hidden"}}>
+    <div className="card-glass" style={{borderRadius:T.r,overflow:"hidden"}}>
       <table style={{width:"100%",borderCollapse:"collapse"}}>
         <thead><tr style={{borderBottom:`1px solid ${T.border}`}}>
           {["Empresa","Comp.","RBT12","Fator r","DAS","Data","Exportar"].map(h=><th key={h} style={{padding:"10px 12px",fontSize:"9px",fontWeight:700,color:T.td,textTransform:"uppercase",textAlign:"left"}}>{h}</th>)}
@@ -1376,7 +1389,7 @@ function SobrePage() {
     </div>
 
     {/* Sobre o aplicativo */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
+    <div className="card-glass" style={{borderRadius:T.r,padding:20,marginBottom:16}}>
       <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><Info size={13} color={T.i}/>Sobre o Aplicativo</h3>
       <p style={{fontSize:"13px",color:T.text,lineHeight:1.7,margin:"0 0 12px"}}>
         O LionSolver calcula o DAS (Documento de Arrecadação do Simples Nacional) com suporte aos Anexos I–V, Fator R, benefícios de ICMS estaduais e ISS por município.
@@ -1390,7 +1403,7 @@ function SobrePage() {
     </div>
 
     {/* Changelog */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
+    <div className="card-glass" style={{borderRadius:T.r,padding:20,marginBottom:16}}>
       <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><History size={13} color={T.p}/>Histórico de Versões</h3>
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {CHANGELOG.map((c,i)=><div key={c.v} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"10px 12px",background:i===0?T.pD:T.bgIn,borderRadius:T.rs,border:i===0?`1px solid ${T.p}`:"none"}}>
@@ -1402,7 +1415,7 @@ function SobrePage() {
     </div>
 
     {/* Tutorial rápido */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20,marginBottom:16}}>
+    <div className="card-glass" style={{borderRadius:T.r,padding:20,marginBottom:16}}>
       <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><FileText size={13} color={T.ok}/>Tutorial Rápido</h3>
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {TUTORIAL.map((step,i)=><div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"10px 12px",background:T.bgIn,borderRadius:T.rs}}>
@@ -1413,7 +1426,7 @@ function SobrePage() {
     </div>
 
     {/* Contato / Suporte */}
-    <div style={{background:T.bgCard,border:`1px solid ${T.border}`,borderRadius:T.r,padding:20}}>
+    <div className="card-glass" style={{borderRadius:T.r,padding:20}}>
       <h3 style={{fontSize:"12px",fontWeight:700,color:T.tm,textTransform:"uppercase",letterSpacing:"0.04em",margin:"0 0 14px",display:"flex",alignItems:"center",gap:6}}><Settings size={13} color={T.tm}/>Contato & Suporte</h3>
       <div style={{display:"flex",flexDirection:"column",gap:6}}>
         <p style={{fontSize:"12px",color:T.text,margin:0,display:"flex",alignItems:"center",gap:6}}><Check size={13} color={T.ok}/>Atualizações automáticas via internet</p>
@@ -1462,29 +1475,123 @@ export default function App(){
     case"sobre":return <SobrePage />;
     default:return <DashboardPage db={db} navigate={setPage} config={config}/>;
   }};
-  return <div style={{display:"flex",height:"100vh",fontFamily:T.f,background:T.bg,color:T.text,overflow:"hidden"}}>
+  return <div style={{display:"flex",flexDirection:"column",height:"100vh",fontFamily:T.f,background:`radial-gradient(ellipse 80% 60% at 15% 80%, rgba(187,195,255,0.05) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 85% 20%, rgba(0,218,243,0.04) 0%, transparent 70%), ${T.bg}`,color:T.text,overflow:"hidden",position:"relative"}}>
     <ReportModal report={report} onClose={() => setReport(null)} />
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
       *{box-sizing:border-box;margin:0;padding:0}
-      ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:${T.border};border-radius:3px}
+      ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:rgba(187,195,255,0.25)}
       select option{background:${T.bgIn};color:${T.text}}input::placeholder{color:${T.td}}
+      .floating-dock {
+        position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 6px; padding: 10px 20px;
+        background: rgba(14,14,14,0.82); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid rgba(255,255,255,0.07); border-radius: 100px;
+        box-shadow: 0 24px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06); z-index: 1000;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+      }
+      .dock-btn { transition: all 0.22s cubic-bezier(0.16,1,0.3,1) !important; }
+      .dock-btn:hover { background: rgba(187,195,255,0.08) !important; color: #dee0ff !important; }
+      .dock-hidden { transform: translate(-50%, 150%); opacity: 0; pointer-events: none; }
+      .app-main { flex: 1; overflow: auto; padding: 28px 44px 110px; }
+      .card-glass {
+        background: rgba(22,21,21,0.60) !important;
+        backdrop-filter: blur(24px) saturate(160%);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        border: 1px solid rgba(255,255,255,0.07) !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+        transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), box-shadow 0.28s ease, border-color 0.28s ease;
+      }
+      .card-glass:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.44), 0 0 0 1px rgba(187,195,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+        border-color: rgba(187,195,255,0.16) !important;
+      }
+      .kpi-glass {
+        background: rgba(22,21,21,0.60) !important;
+        backdrop-filter: blur(24px) saturate(160%);
+        -webkit-backdrop-filter: blur(24px) saturate(160%);
+        border: 1px solid rgba(255,255,255,0.07) !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+        transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease, border-color 0.3s ease;
+        position: relative; overflow: hidden;
+      }
+      .kpi-glass::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(187,195,255,0.35), transparent);
+        opacity: 0; transition: opacity 0.3s ease;
+      }
+      .kpi-glass:hover { transform: translateY(-4px) scale(1.012); }
+      .kpi-glass:hover::before { opacity: 1; }
+      .kpi-glass:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(187,195,255,0.16), inset 0 1px 0 rgba(255,255,255,0.09); border-color: rgba(187,195,255,0.2) !important; }
+      .hover-row { transition: background 0.18s ease; cursor: default; }
+      .hover-row:hover { background: rgba(187,195,255,0.04) !important; }
+      .btn-primary { transition: all 0.22s cubic-bezier(0.16,1,0.3,1) !important; }
+      .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 20px rgba(187,195,255,0.3), 0 4px 16px rgba(187,195,255,0.15) !important; }
+      .btn-primary:active:not(:disabled) { transform: translateY(0px); }
+      .month-cell {
+        display: flex; flex-direction: column; gap: 5px;
+        padding: 10px; border-radius: 10px;
+        background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06);
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      }
+      .month-cell:hover:not(.month-disabled) { border-color: rgba(187,195,255,0.2); background: rgba(187,195,255,0.04); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+      .month-cell.month-disabled { opacity: 0.28; }
+      .month-cell-label { font-size: 10px; font-family: 'Inter', monospace; font-weight: 600; color: rgba(187,195,255,0.7); letter-spacing: 0.04em; }
+      .month-cell-input {
+        width: 100%; padding: 5px 7px;
+        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 6px; color: #e5e2e1; font-size: 11px;
+        font-family: 'Inter', monospace; outline: none; box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .month-cell-input:focus { border-color: rgba(187,195,255,0.4); box-shadow: 0 0 0 3px rgba(187,195,255,0.08); }
+      .month-cell-input:disabled { cursor: not-allowed; background: transparent; border-color: transparent; color: rgba(255,255,255,0.2); }
+      .month-cell-input::placeholder { color: rgba(255,255,255,0.2); }
+      .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 8px; }
+      .section-label::before { content:''; display:inline-block; width:3px; height:13px; border-radius:2px; background:linear-gradient(180deg,#bbc3ff,#00daf3); flex-shrink:0; }
+      .inp-focus-glow:focus { box-shadow: 0 0 0 3px rgba(187,195,255,0.1) !important; border-color: #bbc3ff !important; }
+      .chart-bar { transition: filter 0.2s, transform 0.2s; }
+      .chart-bar:hover { filter: brightness(1.2); transform: scaleY(1.04); transform-origin: bottom; }
+      .stepper-bar { transition: all 0.35s cubic-bezier(0.16,1,0.3,1); }
+      .result-summary { background: linear-gradient(135deg,rgba(187,195,255,0.07),rgba(0,218,243,0.05)) !important; border: 1px solid rgba(255,255,255,0.07) !important; }
+      @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+      .das-value { background: linear-gradient(90deg,#00daf3,#bbc3ff,#00daf3); background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite; }
     `}</style>
 
-    <aside style={{width:col?56:200,background:T.bgSide,borderRight:`1px solid ${T.sideBorder||T.border}`,display:"flex",flexDirection:"column",transition:"width 0.25s",flexShrink:0,overflow:"hidden"}}>
-      <div style={{padding:col?"14px 8px":"14px 16px",borderBottom:`1px solid ${T.sideBorder||T.border}`,display:"flex",alignItems:"center",gap:8}}>
-        <div style={{width:30,height:30,borderRadius:"7px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",fontWeight:800,color:"#fff"}}>L</div>
-        {!col&&<div><p style={{fontSize:"13px",fontWeight:800,color:T.sideText||T.text,margin:0}}>LionSolver</p><p style={{fontSize:"8px",color:T.sideTd||T.td,margin:0,letterSpacing:"0.08em",textTransform:"uppercase"}}>Simples Nacional</p></div>}
+    <header style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 44px",background:"rgba(14,14,14,0.4)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.04)",zIndex:10,flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:34,height:34,borderRadius:"10px",background:`linear-gradient(135deg,${T.p},${T.pH})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",fontWeight:900,color:"#131313",boxShadow:`0 0 20px ${T.p}40`}}>L</div>
+        <div>
+          <span style={{fontSize:"17px",fontWeight:800,letterSpacing:"-0.03em",fontFamily:"'Manrope',sans-serif",color:T.text}}>LionSolver</span>
+          <span style={{fontSize:"10px",color:T.td,marginLeft:8,fontFamily:T.fm,letterSpacing:"0.02em"}}>v{APP_VERSION}</span>
+        </div>
       </div>
-      <nav style={{flex:1,padding:"8px 4px",display:"flex",flexDirection:"column",gap:1}}>
-        {NAV.map(n=>{const a=page===n.id;return <button key={n.id} onClick={()=>setPage(n.id)} style={{display:"flex",alignItems:"center",gap:8,padding:col?"9px 0":"9px 10px",justifyContent:col?"center":"flex-start",background:a?T.pD:"transparent",color:a?T.p:(T.sideTm||T.tm),border:"none",borderRadius:T.rs,cursor:"pointer",fontFamily:T.f,fontSize:"12px",fontWeight:a?700:500,width:"100%",borderLeft:a?`3px solid ${T.p}`:"3px solid transparent"}}><n.icon size={15}/>{!col&&n.label}</button>;})}
-      </nav>
-      <div style={{padding:"8px 4px",borderTop:`1px solid ${T.sideBorder||T.border}`}}>
-        <button onClick={()=>setCol(!col)} style={{display:"flex",alignItems:"center",justifyContent:"center",width:"100%",padding:6,background:"transparent",border:"none",color:T.sideTd||T.td,cursor:"pointer",borderRadius:T.rs,fontSize:"10px",fontFamily:T.f}}><Menu size={13}/>{!col&&<span style={{marginLeft:6}}>Recolher</span>}</button>
-        {!col&&<p style={{textAlign:"center",fontSize:"9px",color:T.sideTd||T.td,margin:"6px 0 2px",fontFamily:T.fm}}>v{APP_VERSION}</p>}
+      <div style={{display:"flex",gap:12,alignItems:"center"}}>
+        <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(187,195,255,0.08)",border:"1px solid rgba(187,195,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"13px",fontWeight:700,color:T.p,fontFamily:T.f}}>U</span></div>
       </div>
-    </aside>
+    </header>
 
-    <main style={{flex:1,overflow:"auto",padding:"24px 28px"}}>{render()}</main>
+    <main className="app-main" onMouseMove={(e) => {
+      if (window.innerHeight - e.clientY < 180) setCol(false);
+      else setCol(true);
+    }}>{render()}</main>
+
+    <div className={`floating-dock ${col ? 'dock-hidden' : ''}`} onMouseEnter={() => setCol(false)}>
+      {NAV.map(n => {
+        const a = page === n.id;
+        return <button key={n.id} onClick={() => setPage(n.id)} title={n.label} className="dock-btn" style={{
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          padding: "9px 18px", background: a ? T.pD : "transparent",
+          color: a ? T.p : T.tm, border: "none", borderRadius: "100px", cursor: "pointer",
+          fontFamily: T.f, fontSize: "12px", fontWeight: a ? 700 : 500, transition: "all 0.25s",
+          boxShadow: a ? `0 0 16px ${T.p}30` : "none"
+        }}>
+          <n.icon size={17} strokeWidth={a ? 2.5 : 1.8}/>
+          {a && <span style={{letterSpacing:"0.01em"}}>{n.label}</span>}
+        </button>;
+      })}
+    </div>
   </div>;
 }
