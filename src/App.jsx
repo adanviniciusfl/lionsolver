@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Search, Plus, Pencil, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, TriangleAlert, TrendingUp, DollarSign, Archive, RotateCcw, MapPin, Settings, Download, Upload, Info } from "lucide-react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Search, Plus, Pencil, Trash2, Building2, LayoutDashboard, Calculator, FileText, History, ChevronRight, ChevronLeft, X, Check, TriangleAlert, TrendingUp, DollarSign, Archive, RotateCcw, MapPin, Settings, Download, Upload, Info, LogOut } from "lucide-react";
 import * as XLSX from "xlsx";
+import { supabase } from "./lib/supabase";
 
 /* ══════════════════════════════════════════════════════════════
    AUTO-UPDATER (only runs in Tauri desktop, ignored in browser)
@@ -41,7 +43,7 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.8.0";
 
 const THEMES = {
   escuro: {
@@ -550,26 +552,67 @@ function saveData(key, data) {
   try { localStorage.setItem("lionsolver_" + key, JSON.stringify(data)); } catch (e) { /* ignore */ }
 }
 
-function useDB() {
-  const [empresas, setE] = useState(() => loadData("empresas", []));
+function useDB(session) {
+  const [empresas, setE] = useState([]);
   const [apuracoes, setA] = useState(() => loadData("apuracoes", []));
 
-  useEffect(() => { saveData("empresas", empresas); }, [empresas]);
+  // Fetch empresas from Supabase when session is available
+  useEffect(() => {
+    if (!session?.user?.id) { setE([]); return; }
+    supabase.from("empresas").select("*").eq("user_id", session.user.id)
+      .then(({ data }) => { if (data) setE(data); });
+  }, [session?.user?.id]);
+
   useEffect(() => { saveData("apuracoes", apuracoes); }, [apuracoes]);
 
-  const addE = useCallback(d => {
-    const e = { ...d, id: genId(), ativa: true };
-    setE(p => [...p, e]);
-    return e;
-  }, []);
-  const updE = useCallback((id, d) => setE(p => p.map(e => e.id === id ? { ...e, ...d } : e)), []);
-  const togE = useCallback(id => setE(p => p.map(e => e.id === id ? { ...e, ativa: !e.ativa } : e)), []);
-  const delE = useCallback(id => setE(p => p.filter(e => e.id !== id)), []);
+  const addE = useCallback(async (d) => {
+    if (!session?.user?.id) return null;
+    const e = { ...d, id: genId(), ativa: true, user_id: session.user.id };
+    const { data } = await supabase.from("empresas").insert(e).select().single();
+    const inserted = data ?? e;
+    setE(p => [...p, inserted]);
+    return inserted;
+  }, [session?.user?.id]);
+
+  const updE = useCallback(async (id, d) => {
+    if (!session?.user?.id) return;
+    await supabase.from("empresas").update(d).eq("id", id).eq("user_id", session.user.id);
+    setE(p => p.map(e => e.id === id ? { ...e, ...d } : e));
+  }, [session?.user?.id]);
+
+  const togE = useCallback(async (id) => {
+    if (!session?.user?.id) return;
+    setE(p => {
+      const target = p.find(e => e.id === id);
+      if (!target) return p;
+      const next = !target.ativa;
+      supabase.from("empresas").update({ ativa: next }).eq("id", id).eq("user_id", session.user.id);
+      return p.map(e => e.id === id ? { ...e, ativa: next } : e);
+    });
+  }, [session?.user?.id]);
+
+  const delE = useCallback(async (id) => {
+    if (!session?.user?.id) return;
+    await supabase.from("empresas").delete().eq("id", id).eq("user_id", session.user.id);
+    setE(p => p.filter(e => e.id !== id));
+  }, [session?.user?.id]);
+
   const addA = useCallback(a => {
     const ap = { ...a, id: genId(), created_at: new Date().toISOString() };
     setA(p => [...p, ap]);
     return ap;
   }, []);
+
+  const delApuracao = useCallback(async (empresa_id, apuracao_id) => {
+    const empresa = empresas.find(e => e.id === empresa_id);
+    if (empresa) {
+      const newApuracoes = (empresa.apuracoes || []).filter(a => a.id !== apuracao_id);
+      await supabase.from("empresas").update({ apuracoes: newApuracoes }).eq("id", empresa_id).eq("user_id", session?.user?.id);
+      setE(p => p.map(e => e.id === empresa_id ? { ...e, apuracoes: newApuracoes } : e));
+    }
+    setA(p => p.filter(a => a.id !== apuracao_id));
+  }, [empresas, session?.user?.id]);
+
   const importData = useCallback((data) => {
     if (data.empresas) setE(data.empresas);
     if (data.apuracoes) setA(data.apuracoes);
@@ -579,7 +622,7 @@ function useDB() {
     try { localStorage.removeItem("lionsolver_empresas"); localStorage.removeItem("lionsolver_apuracoes"); localStorage.removeItem("lionsolver_config"); } catch(e) {}
   }, []);
 
-  return { empresas, apuracoes, addE, updE, togE, delE, addA, importData, clearAll };
+  return { empresas, apuracoes, addE, updE, togE, delE, addA, delApuracao, importData, clearAll };
 }
 /* ══════════════════════════════════════════════════════════════
    WIZARD DE APURAÇÃO
@@ -1396,7 +1439,7 @@ function HistoricoPage({db}){
     <div className="card-glass" style={{borderRadius:T.r,overflow:"hidden"}}>
       <table style={{width:"100%",borderCollapse:"collapse"}}>
         <thead><tr style={{borderBottom:`1px solid ${T.border}`}}>
-          {["Empresa","Comp.","RBT12","Fator r","DAS","Data","Exportar"].map(h=><th key={h} style={{padding:"10px 12px",fontSize:"9px",fontWeight:700,color:T.td,textTransform:"uppercase",textAlign:"left"}}>{h}</th>)}
+          {["Empresa","Comp.","RBT12","Fator r","DAS","Data","Exportar",""].map(h=><th key={h} style={{padding:"10px 12px",fontSize:"9px",fontWeight:700,color:T.td,textTransform:"uppercase",textAlign:"left"}}>{h}</th>)}
         </tr></thead>
         <tbody>{sorted.map(a=>{
           const emp = db.empresas.find(e => e.id === a.empresa_id) || { cnpj: "—", razao: a.empresa_nome, fantasia: a.empresa_nome, uf: "—", cidade: "—", anexo: "—", abertura: "—" };
@@ -1413,6 +1456,15 @@ function HistoricoPage({db}){
               <Btn v="ghost" sz="sm" icon={BarChart3Fallback} onClick={() => gerarXLSX(a, emp, a.competencia)}>XLS</Btn>
             </div>
           </td>
+          <td style={{padding:"10px 12px"}}>
+            <button
+              onClick={() => { if (window.confirm("Apagar esta apuração?")) db.delApuracao(a.empresa_id, a.id); }}
+              title="Apagar apuração"
+              style={{width:28,height:28,borderRadius:8,background:"transparent",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:T.td,transition:"all 0.18s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background=T.errD;e.currentTarget.style.borderColor=T.err;e.currentTarget.style.color=T.err;}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.td;}}
+            ><Trash2 size={13}/></button>
+          </td>
         </tr>;})}
         </tbody>
       </table>
@@ -1425,6 +1477,7 @@ function HistoricoPage({db}){
    ══════════════════════════════════════════════════════════════ */
 function SobrePage() {
   const CHANGELOG = [
+    {v:"1.8.0", desc:"Fase D (SaaS Pivot): Migração para Banco de Dados em Nuvem (PostgreSQL/Supabase); Autenticação com proteção de rotas; Planos de uso (Self, Pro, Enterprise) com suporte a CPF/CNPJ; Botão de LogOut e exclusão de histórico."},
     {v:"1.7.0", desc:"Fase C: Toggle de RBT12 Detalhada/Simplificada no módulo de apuração; Soft UI Light Theme com paleta off-white, sombras suaves e alto contraste para o tema claro"},
     {v:"1.6.0", desc:"Fase B: Menu Flutuante com dock glassmorphism e navegação animada; Dark Mode Obsidian com tokens de design completos, gradientes radiais e efeitos de brilho"},
     {v:"1.5.0", desc:"Filtro de período no Dashboard com seleção de mês/ano; exportação de relatório para Excel via SheetJS com formatação de células"},
@@ -1504,7 +1557,7 @@ function SobrePage() {
    ══════════════════════════════════════════════════════════════ */
 const NAV=[{id:"dashboard",label:"Dashboard",icon:LayoutDashboard},{id:"empresas",label:"Empresas",icon:Building2},{id:"apuracao",label:"Apuração",icon:Calculator},{id:"historico",label:"Histórico",icon:History},{id:"config",label:"Configurações",icon:Settings},{id:"sobre",label:"Sobre",icon:Info}];
 
-export default function App(){
+function LionSolver({ session }){
   const[page,setPage]=useState("dashboard");
   const[col,setCol]=useState(false);
   const[report,setReport]=useState(null);
@@ -1517,7 +1570,7 @@ export default function App(){
     });
   }, []);
   const[updateStatus,setUpdateStatus]=useState("idle");
-  const db=useDB();
+  const db=useDB(session);
 
   // Wire up the global report modal setter
   _setReportModal = setReport;
@@ -1631,8 +1684,15 @@ export default function App(){
           <span style={{fontSize:"10px",color:T.td,marginLeft:8,fontFamily:T.fm,letterSpacing:"0.02em"}}>v{APP_VERSION}</span>
         </div>
       </div>
-      <div style={{display:"flex",gap:12,alignItems:"center"}}>
-        <div style={{width:32,height:32,borderRadius:"50%",background:T.avatarBg,border:`1px solid ${T.avatarBorder}`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"13px",fontWeight:700,color:T.p,fontFamily:T.f}}>U</span></div>
+      <div style={{display:"flex",gap:10,alignItems:"center"}}>
+        <div style={{width:32,height:32,borderRadius:"50%",background:T.avatarBg,border:`1px solid ${T.avatarBorder}`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:"13px",fontWeight:700,color:T.p,fontFamily:T.f}}>{(session?.user?.email?.[0] ?? "U").toUpperCase()}</span></div>
+        <button
+          onClick={() => supabase.auth.signOut()}
+          title="Sair da conta"
+          style={{width:32,height:32,borderRadius:"50%",background:"transparent",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:T.tm,transition:"all 0.2s",flexShrink:0}}
+          onMouseEnter={e=>{e.currentTarget.style.background=T.errD;e.currentTarget.style.borderColor=T.err;e.currentTarget.style.color=T.err;}}
+          onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor=T.border;e.currentTarget.style.color=T.tm;}}
+        ><LogOut size={14}/></button>
       </div>
     </header>
 
@@ -1657,4 +1717,263 @@ export default function App(){
       })}
     </div>
   </div>;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AUTH PAGE — Obsidian Glassmorphism
+   ══════════════════════════════════════════════════════════════ */
+const PLANS = [
+  { id: "Self",       label: "Self",       desc: "Uso individual",      docLabel: "CNPJ",  docMask: "00.000.000/0000-00" },
+  { id: "Pro",        label: "Pro",        desc: "Contador autônomo",   docLabel: "CPF",   docMask: "000.000.000-00"     },
+  { id: "Enterprise", label: "Enterprise", desc: "Escritório contábil", docLabel: "CNPJ",  docMask: "00.000.000/0000-00" },
+];
+
+function AuthPage() {
+  const T = THEMES.claro;
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("Self");
+  const [documento, setDocumento] = useState("");
+
+  const currentPlan = PLANS.find(p => p.id === selectedPlan);
+
+  const handleSignIn = async () => {
+    setError(null);
+    setLoading(true);
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    if (err) setError(err.message === "Invalid login credentials" ? "E-mail ou senha incorretos." : err.message);
+    setLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    setError(null);
+    setLoading(true);
+    const { error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { tier: selectedPlan, documento } },
+    });
+    if (err) {
+      setError(err.message === "Password should be at least 6 characters." ? "A senha deve ter no mínimo 6 caracteres." : err.message);
+    } else {
+      setError("Cadastro concluído! Verifique sua caixa de entrada para confirmar o e-mail.");
+    }
+    setLoading(false);
+  };
+
+  const inpStyle = {
+    padding: "11px 14px", borderRadius: 10, fontSize: 14,
+    background: T.bgIn, border: `1px solid ${T.border}`,
+    color: T.text, outline: "none", fontFamily: T.f,
+    transition: "border-color 0.2s, box-shadow 0.2s", width: "100%", boxSizing: "border-box",
+  };
+  const inpFocus = e => { e.target.style.borderColor = T.p; e.target.style.boxShadow = `0 0 0 3px ${T.pD}`; };
+  const inpBlur  = e => { e.target.style.borderColor = T.border; e.target.style.boxShadow = "none"; };
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "center",
+      minHeight: "100vh", fontFamily: T.f, background: T.bg,
+    }}>
+      <div style={{
+        width: "100%", maxWidth: isLogin ? 400 : 460, padding: "40px 36px",
+        background: T.glassCardBg,
+        backdropFilter: "blur(32px) saturate(160%)",
+        WebkitBackdropFilter: "blur(32px) saturate(160%)",
+        border: `1px solid ${T.glassCardBorder}`,
+        borderRadius: parseInt(T.r) + 4,
+        boxShadow: T.glassCardShadow,
+        display: "flex", flexDirection: "column", gap: 20,
+        transition: "max-width 0.3s ease",
+      }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+          <div style={{
+            width: 38, height: 38, borderRadius: 12,
+            background: `linear-gradient(135deg,${T.p},${T.pH})`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 18, fontWeight: 900, color: "#fff",
+            boxShadow: `0 0 20px rgba(40,72,238,0.25)`,
+          }}>L</div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.03em", color: T.text }}>LionSolver</div>
+            <div style={{ fontSize: 11, color: T.tm, fontFamily: T.fm }}>{isLogin ? "Acesse sua conta" : "Crie sua conta"}</div>
+          </div>
+        </div>
+
+        {/* Mode toggle */}
+        <div style={{ display: "flex", background: T.bgIn, borderRadius: 10, padding: 4, gap: 4 }}>
+          {["Entrar", "Criar Conta"].map((label, i) => {
+            const active = isLogin === (i === 0);
+            return (
+              <button key={label} onClick={() => { setIsLogin(i === 0); setError(null); setDocumento(""); }}
+                style={{
+                  flex: 1, padding: "8px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                  background: active ? T.bgCard : "transparent",
+                  color: active ? T.p : T.tm,
+                  border: active ? `1px solid ${T.border}` : "1px solid transparent",
+                  cursor: "pointer", fontFamily: T.f,
+                  boxShadow: active ? T.glassCardShadow : "none",
+                  transition: "all 0.2s",
+                }}
+              >{label}</button>
+            );
+          })}
+        </div>
+
+        {/* Plan selector — only on Sign Up */}
+        {!isLogin && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: T.tm, letterSpacing: "0.06em", textTransform: "uppercase" }}>Selecione seu Plano</label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+              {PLANS.map(plan => {
+                const active = selectedPlan === plan.id;
+                return (
+                  <button key={plan.id} onClick={() => { setSelectedPlan(plan.id); setDocumento(""); }}
+                    style={{
+                      padding: "12px 8px", borderRadius: 12, textAlign: "center", cursor: "pointer",
+                      background: active ? T.pD : T.bgIn,
+                      border: `2px solid ${active ? T.p : T.border}`,
+                      outline: "none", fontFamily: T.f,
+                      boxShadow: active ? `0 0 0 1px ${T.p}30, inset 0 1px 0 rgba(255,255,255,0.8)` : "none",
+                      transition: "all 0.2s cubic-bezier(0.16,1,0.3,1)",
+                    }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 800, color: active ? T.p : T.text, letterSpacing: "-0.02em" }}>{plan.label}</div>
+                    <div style={{ fontSize: 10, color: T.tm, marginTop: 3, fontWeight: 500 }}>{plan.desc}</div>
+                    <div style={{ fontSize: 10, color: active ? T.p : T.td, marginTop: 4, fontWeight: 600, fontFamily: T.fm }}>
+                      {plan.docLabel}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Email */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: T.tm, letterSpacing: "0.04em", textTransform: "uppercase" }}>E-mail</label>
+          <input
+            type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="seu@email.com"
+            onKeyDown={e => e.key === "Enter" && (isLogin ? handleSignIn() : handleSignUp())}
+            style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}
+          />
+        </div>
+
+        {/* Password */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: T.tm, letterSpacing: "0.04em", textTransform: "uppercase" }}>Senha</label>
+          <input
+            type="password" value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="••••••••"
+            onKeyDown={e => e.key === "Enter" && (isLogin ? handleSignIn() : handleSignUp())}
+            style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}
+          />
+        </div>
+
+        {/* Document field — only on Sign Up */}
+        {!isLogin && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: T.tm, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              {currentPlan.docLabel} <span style={{ color: T.td, fontWeight: 400, textTransform: "none" }}>({currentPlan.desc})</span>
+            </label>
+            <input
+              type="text" value={documento} onChange={e => setDocumento(e.target.value)}
+              placeholder={currentPlan.docMask}
+              style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}
+            />
+          </div>
+        )}
+
+        {/* Feedback */}
+        {error && (
+          <div style={{
+            padding: "10px 14px", borderRadius: 10, fontSize: 13,
+            background: error.includes("concluído") ? T.okD : T.errD,
+            border: `1px solid ${error.includes("concluído") ? T.ok : T.err}`,
+            color: error.includes("concluído") ? T.ok : T.err,
+          }}>{error}</div>
+        )}
+
+        {/* Buttons */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+          {isLogin ? (
+            <button
+              onClick={handleSignIn} disabled={loading}
+              style={{
+                padding: "12px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+                background: T.p, color: T.pText,
+                border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
+                fontFamily: T.f, letterSpacing: "0.01em",
+                transition: "all 0.22s cubic-bezier(0.16,1,0.3,1)",
+                boxShadow: `0 4px 16px ${T.p}40`,
+              }}
+              onMouseEnter={e => { if (!loading) e.target.style.boxShadow = `0 0 20px ${T.p}60, 0 4px 16px ${T.p}40`; }}
+              onMouseLeave={e => { e.target.style.boxShadow = `0 4px 16px ${T.p}40`; }}
+            >{loading ? "Entrando..." : "Entrar"}</button>
+          ) : (
+            <button
+              onClick={handleSignUp} disabled={loading}
+              style={{
+                padding: "12px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+                background: T.p, color: T.pText,
+                border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
+                fontFamily: T.f, letterSpacing: "0.01em",
+                transition: "all 0.22s cubic-bezier(0.16,1,0.3,1)",
+                boxShadow: `0 4px 16px ${T.p}40`,
+              }}
+              onMouseEnter={e => { if (!loading) e.target.style.boxShadow = `0 0 20px ${T.p}60, 0 4px 16px ${T.p}40`; }}
+              onMouseLeave={e => { e.target.style.boxShadow = `0 4px 16px ${T.p}40`; }}
+            >{loading ? "Criando conta..." : `Criar conta — Plano ${selectedPlan}`}</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PROTECTED ROUTE
+   ══════════════════════════════════════════════════════════════ */
+function ProtectedRoute({ session, children }) {
+  if (session === undefined) return null; // still loading
+  if (!session) return <Navigate to="/login" replace />;
+  return children;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   APP ROOT — Router + Auth State
+   ══════════════════════════════════════════════════════════════ */
+export default function App() {
+  const [session, setSession] = useState(undefined); // undefined = loading
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={session ? <Navigate to="/app" replace /> : <AuthPage />} />
+        <Route path="/app/*" element={
+          <ProtectedRoute session={session}>
+            <LionSolver session={session} />
+          </ProtectedRoute>
+        } />
+        <Route path="/" element={<Navigate to="/app" replace />} />
+        <Route path="*" element={<Navigate to="/app" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
