@@ -43,7 +43,7 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.8.1";
 
 const THEMES = {
   escuro: {
@@ -554,30 +554,40 @@ function saveData(key, data) {
 
 function useDB(session) {
   const [empresas, setE] = useState([]);
-  const [apuracoes, setA] = useState(() => loadData("apuracoes", []));
 
   // Fetch empresas from Supabase when session is available
   useEffect(() => {
     if (!session?.user?.id) { setE([]); return; }
-    supabase.from("empresas").select("*").eq("user_id", session.user.id)
+    supabase.from("empresas").select("*").eq("user_id", session.user.id).order("razao", { ascending: true })
       .then(({ data }) => { if (data) setE(data); });
   }, [session?.user?.id]);
 
-  useEffect(() => { saveData("apuracoes", apuracoes); }, [apuracoes]);
+  // Derived state for all apuracoes from all empresas
+  const apuracoes = useMemo(() => {
+    return empresas.flatMap(e => (e.apuracoes || []).map(a => ({ ...a, empresa_id: e.id })));
+  }, [empresas]);
 
   const addE = useCallback(async (d) => {
     if (!session?.user?.id) return null;
-    const e = { ...d, id: genId(), ativa: true, user_id: session.user.id };
-    const { data } = await supabase.from("empresas").insert(e).select().single();
-    const inserted = data ?? e;
-    setE(p => [...p, inserted]);
-    return inserted;
+    // Removemos o id manual (genId) para deixar o Supabase gerar o UUID
+    const e = { ...d, user_id: session.user.id };
+    const { data, error } = await supabase.from("empresas").insert(e).select().single();
+    if (error) {
+      console.error("Erro ao salvar empresa:", error);
+      return null;
+    }
+    setE(p => [...p, data]);
+    return data;
   }, [session?.user?.id]);
 
   const updE = useCallback(async (id, d) => {
     if (!session?.user?.id) return;
-    await supabase.from("empresas").update(d).eq("id", id).eq("user_id", session.user.id);
-    setE(p => p.map(e => e.id === id ? { ...e, ...d } : e));
+    const { data, error } = await supabase.from("empresas").update(d).eq("id", id).eq("user_id", session.user.id).select().single();
+    if (error) {
+      console.error("Erro ao atualizar empresa:", error);
+      return;
+    }
+    setE(p => p.map(e => e.id === id ? data : e));
   }, [session?.user?.id]);
 
   const togE = useCallback(async (id) => {
@@ -597,29 +607,39 @@ function useDB(session) {
     setE(p => p.filter(e => e.id !== id));
   }, [session?.user?.id]);
 
-  const addA = useCallback(a => {
+  const addA = useCallback(async (a) => {
+    const empresa = empresas.find(e => e.id === a.empresa_id);
+    if (!empresa || !session?.user?.id) return null;
+    
     const ap = { ...a, id: genId(), created_at: new Date().toISOString() };
-    setA(p => [...p, ap]);
+    const newApuracoes = [...(empresa.apuracoes || []), ap];
+    
+    const { error } = await supabase.from("empresas").update({ apuracoes: newApuracoes })
+      .eq("id", a.empresa_id).eq("user_id", session.user.id);
+      
+    if (!error) {
+      setE(p => p.map(e => e.id === a.empresa_id ? { ...e, apuracoes: newApuracoes } : e));
+    }
     return ap;
-  }, []);
+  }, [empresas, session?.user?.id]);
 
   const delApuracao = useCallback(async (empresa_id, apuracao_id) => {
     const empresa = empresas.find(e => e.id === empresa_id);
-    if (empresa) {
+    if (empresa && session?.user?.id) {
       const newApuracoes = (empresa.apuracoes || []).filter(a => a.id !== apuracao_id);
-      await supabase.from("empresas").update({ apuracoes: newApuracoes }).eq("id", empresa_id).eq("user_id", session?.user?.id);
+      await supabase.from("empresas").update({ apuracoes: newApuracoes })
+        .eq("id", empresa_id).eq("user_id", session.user.id);
       setE(p => p.map(e => e.id === empresa_id ? { ...e, apuracoes: newApuracoes } : e));
     }
-    setA(p => p.filter(a => a.id !== apuracao_id));
   }, [empresas, session?.user?.id]);
 
   const importData = useCallback((data) => {
+    // Apenas para compatibilidade de importação manual via JSON
     if (data.empresas) setE(data.empresas);
-    if (data.apuracoes) setA(data.apuracoes);
   }, []);
   const clearAll = useCallback(() => {
-    setE([]); setA([]);
-    try { localStorage.removeItem("lionsolver_empresas"); localStorage.removeItem("lionsolver_apuracoes"); localStorage.removeItem("lionsolver_config"); } catch(e) {}
+    setE([]);
+    try { localStorage.clear(); } catch(e) {}
   }, []);
 
   return { empresas, apuracoes, addE, updE, togE, delE, addA, delApuracao, importData, clearAll };
@@ -797,7 +817,7 @@ function ApuracaoPage({db,navigate}){
     setStep(3);
   };
 
-  const salvar = () => {
+  const salvar = async () => {
     // Save with FULL monthly breakdown (all 12 months of RBT12 + FS12)
     const meses = getMeses();
     const rbt12Detalhado = {};
@@ -813,7 +833,7 @@ function ApuracaoPage({db,navigate}){
     // Also save the current month's revenue from receitas
     const receitaTotalMes = receitas.filter(r => pM(r.valor) > 0).reduce((s, r) => s + pM(r.valor), 0);
 
-    db.addA({
+    await db.addA({
       empresa_id: empId,
       empresa_nome: emp?.fantasia || emp?.razao,
       competencia: comp,
@@ -1750,11 +1770,15 @@ function AuthPage() {
 
   const handleSignUp = async () => {
     setError(null);
+    if (!documento) {
+      setError(`O campo ${currentPlan.docLabel} é obrigatório.`);
+      return;
+    }
     setLoading(true);
     const { error: err } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { tier: selectedPlan, documento } },
+      options: { data: { tier: selectedPlan.toLowerCase(), documento } },
     });
     if (err) {
       setError(err.message === "Password should be at least 6 characters." ? "A senha deve ter no mínimo 6 caracteres." : err.message);
