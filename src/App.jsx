@@ -43,7 +43,9 @@ async function checkForUpdates(setUpdateStatus) {
 /* ══════════════════════════════════════════════════════════════
    DESIGN TOKENS — Dark & Light themes
    ══════════════════════════════════════════════════════════════ */
-const APP_VERSION = "1.8.1";
+const APP_VERSION = "1.8.2";
+let T;
+let _setReportModal;
 
 const THEMES = {
   escuro: {
@@ -126,7 +128,8 @@ const THEMES = {
 };
 
 // T will be set dynamically based on theme — start with dark as default
-let T = THEMES.escuro;
+T = THEMES.escuro;
+_setReportModal = () => {};
 
 /* ══════════════════════════════════════════════════════════════
    ENGINE — SIMPLES NACIONAL (LC 123/2006 + LC 155/2016)
@@ -453,7 +456,7 @@ function buildXLSXWorkbook(res, emp, comp) {
 }
 
 // Shared state for report modal — will be used by ReportModal component
-let _setReportModal = null;
+_setReportModal = null;
 
 function gerarPDF(res, emp, comp) {
   if (_setReportModal) _setReportModal({ type: "pdf", html: buildPDFHTML(res, emp, comp), title: `Apuração ${(comp || "").split("-").reverse().join("/")} — ${emp.fantasia || emp.razao || emp.empresa_nome || ""}` });
@@ -1371,7 +1374,7 @@ function EmpresasPage({db}){
   const[search,setSearch]=useState("");
   const[modal,setModal]=useState(false);
   const[editing,setEditing]=useState(null);
-  const blank={cnpj:"",razao:"",fantasia:"",abertura:"",regime:"caixa",uf:"BA",cidade:"Salvador",sublimite:"3600000",anexos:["I"]};
+  const blank={cnpj:"",razao:"",fantasia:"",abertura:"",regime:"caixa",regime_tributario:"Simples Nacional",uf:"BA",cidade:"Salvador",sublimite:3600000,anexos:["I"],ativa:true};
   const[form,setForm]=useState(blank);
 
   const filtered=useMemo(()=>{
@@ -1382,7 +1385,7 @@ function EmpresasPage({db}){
 
   const openNew=()=>{setForm(blank);setEditing(null);setModal(true);};
   const openEdit=e=>{setForm({...e,sublimite:String(e.sublimite),anexos:e.anexos||[e.anexo||"I"]});setEditing(e.id);setModal(true);};
-  const save=()=>{const d={...form,sublimite:Number(form.sublimite),anexo:(form.anexos||["I"])[0]};editing?db.updE(editing,d):db.addE(d);setModal(false);};
+  const save=()=>{const d={...form,sublimite:Number(form.sublimite)};editing?db.updE(editing,d):db.addE(d);setModal(false);};
 
   return <div>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
@@ -1424,7 +1427,8 @@ function EmpresasPage({db}){
         <Inp label="Data de Abertura" value={form.abertura} onChange={v=>setForm(f=>({...f,abertura:v}))} type="date" required/>
         <Sel label="UF" value={form.uf} onChange={v=>{setForm(f=>({...f,uf:v,cidade:""}));}} options={UFS.map(u=>({v:u,l:u}))} required/>
         <Sel label="Cidade (domicílio ISS)" value={form.cidade} onChange={v=>setForm(f=>({...f,cidade:v}))} options={[{v:"",l:"Selecione..."},...(MUNICIPIOS_POR_UF[form.uf]||[]).map(c=>({v:c,l:c}))]} required/>
-        <Sel label="Regime" value={form.regime} onChange={v=>setForm(f=>({...f,regime:v}))} options={[{v:"caixa",l:"Caixa"},{v:"competencia",l:"Competência"}]}/>
+        <Sel label="Tipo de Regime" value={form.regime_tributario} onChange={v=>setForm(f=>({...f,regime_tributario:v}))} options={["Simples Nacional","Lucro Presumido","Lucro Real"]}/>
+        <Sel label="Regime (Caixa/Comp.)" value={form.regime} onChange={v=>setForm(f=>({...f,regime:v}))} options={[{v:"caixa",l:"Caixa"},{v:"competencia",l:"Competência"}]}/>
       </div>
       <div style={{marginTop:14}}>
         <p style={{fontSize:"11px",fontWeight:700,color:T.tm,marginBottom:8}}>Anexos da Empresa (selecione todos que se aplicam)</p>
@@ -1579,7 +1583,7 @@ const NAV=[{id:"dashboard",label:"Dashboard",icon:LayoutDashboard},{id:"empresas
 
 function LionSolver({ session }){
   const[page,setPage]=useState("dashboard");
-  const[col,setCol]=useState(false);
+  const[col,setCol]=useState(false); // Mantemos o estado mas o deck agora é mais visível
   const[report,setReport]=useState(null);
   const[config,setConfigState]=useState(() => loadData("config", {escritorio:"",contador:"",crc:"",ufPadrao:"BA",cidadePadrao:"Salvador",regimePadrao:"caixa",tema:"escuro"}));
   const setConfig = useCallback((updater) => {
@@ -1628,7 +1632,7 @@ function LionSolver({ session }){
       }
       .dock-btn { transition: all 0.22s cubic-bezier(0.16,1,0.3,1) !important; }
       .dock-btn:hover { background: ${T.dockBtnHovBg} !important; color: ${T.dockBtnHovColor} !important; }
-      .dock-hidden { transform: translate(-50%, 150%); opacity: 0; pointer-events: none; }
+      .dock-hidden { transform: translate(-50%, 80px); opacity: 0; pointer-events: none; }
       .app-main { flex: 1; overflow: auto; padding: 28px 44px 110px; }
       .card-glass {
         background: ${T.glassCardBg} !important;
@@ -1717,7 +1721,8 @@ function LionSolver({ session }){
     </header>
 
     <main className="app-main" onMouseMove={(e) => {
-      if (window.innerHeight - e.clientY < 180) setCol(false);
+      // Área de ativação do dock expandida para os últimos 100px da tela
+      if (window.innerHeight - e.clientY < 100) setCol(false); 
       else setCol(true);
     }}>{render()}</main>
 
