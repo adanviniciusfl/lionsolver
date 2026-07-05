@@ -1780,10 +1780,14 @@ function AuthPage() {
       return;
     }
     setLoading(true);
+    const redirectTo = `${window.location.origin}/login`;
     const { error: err } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { tier: selectedPlan.toLowerCase(), documento } },
+      options: { 
+        data: { tier: selectedPlan.toLowerCase(), documento },
+        emailRedirectTo: redirectTo
+      },
     });
     if (err) {
       setError(err.message === "Password should be at least 6 characters." ? "A senha deve ter no mínimo 6 caracteres." : err.message);
